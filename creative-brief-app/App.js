@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useEffect, useState } from 'react';
 
 import { Provider as PaperProvider, TextInput } from 'react-native-paper';
@@ -17,6 +17,8 @@ import { useList } from 'react-firebase-hooks/database';
 
 import { CardComponent } from './components/CardComponent';
 import { database, auth, functions, firebaseToken } from './Firebase';
+import DebugScreen from './screens/Debug';
+import { styles } from './Styles';
 
 const Group20Input = ({ user }) => {
 
@@ -75,7 +77,7 @@ const ColoredBunny = (props) => {
     <Button icon="rabbit" disabled={true} labelStyle={{ color: hslToHex(hue, sat, bri) }} />)
 }
 
-const GetValKey = (snapshot) => (
+export const GetValKey = (snapshot) => (
   snapshot.val().type == "str" ? "string" : "integer"
 )
 
@@ -101,30 +103,30 @@ export default function App() {
   const [satSnapshots, satLoading, satError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(22), limitToLast(1)) : null);
   const [briSnapshots, briLoading, briError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(23), limitToLast(1)) : null);
 
-  return (
-    <PaperProvider>
-      <SafeAreaView style={styles.container}>
+  function MessageScreen() {
+    return (
+      <View>
         <Group20Input user={user}></Group20Input>
         {/* {oledSnapshots ?
-          <Messages messages={oledSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
-          : null}
-        {insideSnapshots ?
-          <Messages messages={insideSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
-          : null} */}
+        <Messages messages={oledSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
+        : null}
+      {insideSnapshots ?
+        <Messages messages={insideSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
+        : null} */}
         {hueSnapshots && satSnapshots && briSnapshots ?
           <ColoredBunny hueSnapshots={hueSnapshots} satSnapshots={satSnapshots} briSnapshots={briSnapshots} />
           : null}
+      </View>
+    )
+  }
+
+  return (
+    <PaperProvider>
+      <SafeAreaView style={styles.container}>
+        <DebugScreen user={user}/>
         <StatusBar style="auto" />
       </SafeAreaView>
     </PaperProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
