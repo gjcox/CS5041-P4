@@ -27,49 +27,6 @@ export default function DebugScreen({ user }) {
         GreyRabbitContact: 8, WhiteRabbitContact: 9,
     }
 
-    /**
-     * Converts a Date object into a time of day representation as minutes from midnight. 
-     * 
-     * @param {Date} date 
-     * @returns a number between 0 and 1440
-     */
-    function getMinuteTime(date) {
-        var hours = date.getHours()
-        var mins = date.getMinutes()
-        return 60 * hours + mins
-    }
-
-    function getSeason(month) {
-        if (month in [10, 11, 0]) {
-            return 0 // winter
-        } else if (month in [1, 2, 3]) {
-            return 1 // spring
-        } else if (month in [4, 5, 6]) {
-            return 2 // summer
-        } else if (month in [7, 8, 9]) {
-            return 3 // autumn
-        }
-    }
-
-    const Activity = Object.freeze({
-        sleep: 'sleep',
-        feed: 'feed',
-        hide: 'hide',
-        shelter: 'shelter',
-        play: 'play',
-        exercise: 'exercise',
-        lookout: 'lookout'
-    })
-
-    const [simTemp, setSimTemp] = useState(0)
-    const [simRain, setSimRain] = useState(false)
-    const [simTime, setSimTime] = useState(getMinuteTime(new Date()))
-    const [simSeason, setSimSeason] = useState(getSeason((new Date().getMonth())))
-    const [simPredator, setSimPredator] = useState(true)
-    const [simRandomChoice, setRandomChoice] = useState(50)
-    const [simRabbitInside, setSimRabbitInside] = useState(false)
-    const [simActivity, setSimActivity] = useState(Activity.play)
-
     return (
         <Grid container columns={8} spacing={2} style={styles.container}>
             {Object.keys(data).map((key, i) => {
