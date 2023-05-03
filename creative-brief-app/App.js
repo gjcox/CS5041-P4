@@ -1,24 +1,24 @@
-import { ScrollView, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 
-import { Provider as PaperProvider, TextInput } from 'react-native-paper';
-import { Button } from 'react-native-paper';
+import { Button, Provider as PaperProvider, TextInput } from 'react-native-paper';
 
 import { StatusBar } from 'expo-status-bar';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithCustomToken } from "firebase/auth";
-import { ref, push, serverTimestamp, query, orderByChild, equalTo, limitToLast } from "firebase/database";
+import { equalTo, limitToLast, orderByChild, push, query, ref, serverTimestamp } from "firebase/database";
 import { httpsCallable } from 'firebase/functions';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useList } from 'react-firebase-hooks/database';
 
-import { CardComponent } from './components/CardComponent';
-import { database, auth, functions, firebaseToken } from './Firebase';
-import DebugScreen from './screens/Debug';
+import { auth, database, firebaseToken, functions } from './Firebase';
 import { styles } from './Styles';
+import { CardComponent } from './components/CardComponent';
+import DebugScreen from './screens/Debug';
+import RabbitSim from './components/RabbitSim';
 
 const Group20Input = ({ user }) => {
 
@@ -123,7 +123,8 @@ export default function App() {
   return (
     <PaperProvider>
       <SafeAreaView style={styles.container}>
-        <DebugScreen user={user}/>
+        <DebugScreen user={user} />
+        <RabbitSim />
         <StatusBar style="auto" />
       </SafeAreaView>
     </PaperProvider>
