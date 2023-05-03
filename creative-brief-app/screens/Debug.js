@@ -4,14 +4,16 @@ import { Grid } from '@mui/material';
 
 import { equalTo, limitToLast, orderByChild, query, ref } from "firebase/database";
 
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useList } from 'react-firebase-hooks/database';
 
-import { styles } from '../Styles';
-import { database } from '../Firebase';
 import { GetValKey } from '../App';
-import { useState } from 'react';
+import { auth, database } from '../Firebase';
+import { styles } from '../Styles';
 
-export default function DebugScreen({ user }) {
+export default function DebugScreen(/*{ user }*/) {
+
+    const [user, authLoading, authError] = useAuthState(auth);
 
     function secondsAgo(time) {
         return `${(Math.round((Date.now() - time) / 1000) + "").padStart(4, "0")} s ago`
@@ -31,7 +33,6 @@ export default function DebugScreen({ user }) {
         <Grid container columns={8} spacing={2} style={styles.container}>
             {Object.keys(data).map((key, i) => {
                 const [snapshots, loading, error] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(data[key]), limitToLast(5)) : null);
-
                 if (snapshots) {
                     return (
                         <Grid item sm={8} md={key == 'OLEDText' ? 8 : 4} lg={key == 'OLEDText' ? 8 : 2} key={i}>
