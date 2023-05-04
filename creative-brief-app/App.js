@@ -23,6 +23,7 @@ import RabbitSim, { Activity } from './components/RabbitSim';
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from './helper_functions/scale';
 import DebugScreen from './screens/Debug';
+import P5Screen from './screens/P5Screen';
 
 export const GetValKey = (snapshot) => (
   snapshot.val().type == "str" ? "string" : "integer"
@@ -143,25 +144,41 @@ export default function App() {
     )
   }
 
+  useEffect(() => {
+    const script = document.createElement('script');
+  
+    script.src = "https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js";
+    script.async = true;
+  
+    document.body.appendChild(script);
+    console.log("Added p5")
+
+    return () => {
+      document.body.removeChild(script);
+      console.log("Removed p5")
+    }
+  }, []);
+
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.container}>
-        <Context.Provider value={{
-          simEnvData: simEnvData,
-          setSimEnvData: setSimEnvData,
-          raining: raining,
-          setRaining: setRaining,
-          rabbitInside: rabbitInside,
-          setRabbitInside: setRabbitInside,
-          rabbitActivity: rabbitActivity,
-          setRabbitActivity: setRabbitActivity,
-        }} >
-          <RabbitSim />
-          <DebugScreen />
-        </Context.Provider>
-        <StatusBar style="auto" />
-      </SafeAreaView>
-    </PaperProvider>
+      <PaperProvider>
+        <SafeAreaView style={styles.container}>
+          <Context.Provider value={{
+            simEnvData: simEnvData,
+            setSimEnvData: setSimEnvData,
+            raining: raining,
+            setRaining: setRaining,
+            rabbitInside: rabbitInside,
+            setRabbitInside: setRabbitInside,
+            rabbitActivity: rabbitActivity,
+            setRabbitActivity: setRabbitActivity,
+          }} >
+            <RabbitSim />
+            {/* <DebugScreen /> */}
+            <P5Screen />
+          </Context.Provider>
+          <StatusBar style="auto" />
+        </SafeAreaView>
+      </PaperProvider>
   );
 }
 
