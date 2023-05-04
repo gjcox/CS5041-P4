@@ -7,7 +7,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Context } from '../Context';
 import { auth, database } from '../Firebase';
 import useInterval from '../helper_functions/useInterval';
-import { getTimeFromMinutes, seasons } from '../helper_functions/dateAndTime';
+import { getTimeFromMinutes, seasons, seasonalDawnDusk } from '../helper_functions/dateAndTime';
 
 export const Activity = Object.freeze({
     sleep: 'sleep',
@@ -54,12 +54,16 @@ export default function RabbitSim() {
         "Rabbits' eyes are on the sides of our heads, so we can see almost all the way around us!",
         "Like cats, rabbits purr when we're content and relaxed.",
         /* End of information from National Geographic. */
+        "Rabbits grow thicker fur in winter. This means we can tolerate the cold better, but overheat easily.",
     ]
 
     function incrementCounters() {
         if (rabbitActivity == Activity.hide) {
             setRabbitHidingCounter(rabbitHidingCounter + 1)
             console.log('rabbitHidingCounter: ', rabbitHidingCounter + 1)
+            if (rabbitHidingCounter + 1 > maxRabbitHide) {
+                setObservationMsgWrapper("I am used to the visitor outside and might stop hiding.")
+            }
         } else {
             setRabbitHidingCounter(Math.max(0, rabbitHidingCounter - 1))
             console.log('rabbitHidingCounter: ', Math.max(0, rabbitHidingCounter - 1))
@@ -122,14 +126,6 @@ export default function RabbitSim() {
         }
     }
 
-    // Approximate daylight hours taken from https://www.scotlandinfo.eu/daylight-hours-sunrise-and-sunset-times/. Accessed 03/05/2023. 
-    const seasonalDawnDusk = [
-        { dawn: 8 * 60 + 45, dusk: 16 * 60 + 25 }, // daylight 8:45-16:25 in winter 
-        { dawn: 6 * 60 + 20, dusk: 20 * 60 + 30 }, // daylight 6:20-20:30 in spring 
-        { dawn: 5 * 60 + 0, dusk: 22 * 60 + 0 }, // daylight 5:00-22:00 in summer 
-        { dawn: 7 * 60 + 55, dusk: 18 * 60 + 25 }, // daylight 7:55-18:25 in autumn 
-    ]
-
     function checkNearDawnDusk() {
         let dawn = seasonalDawnDusk[simEnvData.season.value].dawn
         let dusk = seasonalDawnDusk[simEnvData.season.value].dusk
@@ -169,7 +165,6 @@ export default function RabbitSim() {
     function tooCold() {
         if ([0, 3].includes(simEnvData.season.value)) {
             // it is winter or autumn so the rabbit has grown its winter fur 
-            // TODO communicate this to guests 
             return simEnvData.temp.value <= -10
         } else {
             return simEnvData.temp.value <= 5
@@ -183,7 +178,6 @@ export default function RabbitSim() {
     function tooWarm() {
         if ([0, 3].includes(simEnvData.season.value)) {
             // it is winter or autumn so the rabbit has grown its winter fur 
-            // TODO communicate this to guests 
             return simEnvData.temp.value >= 20
         } else {
             return simEnvData.temp.value >= 25
@@ -250,15 +244,15 @@ export default function RabbitSim() {
         updateRabbitActivity()
     }, activityUpdatePeriod)
 
-    // When the activity message changes, write the new activity
-    useEffect(() => {
-        writeToOLED(activityMsg)
-    }, [activityMsg])
-
     // When the observation message changes, write the new observation
     useEffect(() => {
         writeToOLED(observationMsg)
     }, [observationMsg])
+
+    // When the activity message changes, write the new activity
+    useEffect(() => {
+        writeToOLED(activityMsg)
+    }, [activityMsg])
 
     /**
      * This is the rabbit's brain.
@@ -275,7 +269,7 @@ export default function RabbitSim() {
             setObservationMsgWrapper("I think the visitor has gone away.")
         }
 
-        if (rabbitActivity == Activity.sleep && !rabbitWakeful) {
+        if (rabbitInside && rabbitActivity == Activity.sleep && !rabbitWakeful) {
             setActivityMsgWrapper("Zzzzzz")
         } else if (!rabbitWakeful) {
             setActivityMsgWrapper(buildMessage(!rabbitInside, true, Activity.sleep,
@@ -305,9 +299,9 @@ export default function RabbitSim() {
                 // rabbit is inside 
                 if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter < maxRabbitHide) {
                     setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "the visitor is still outside"))
-                } else if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter == maxRabbitHide) {
+                } /*else if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter == maxRabbitHide) {
                     setActivityMsgWrapper("I am getting used to the visitor and will stop hiding soon.")
-                } else if ((simEnvData.visitor.value) && rabbitHidingCounter < maxRabbitHide) {
+                }*/ else if ((simEnvData.visitor.value) && rabbitHidingCounter < maxRabbitHide) {
                     setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "I heard a visitor outside"))
                     setActivity(true, Activity.hide)
                 } else if (badWeather) {
