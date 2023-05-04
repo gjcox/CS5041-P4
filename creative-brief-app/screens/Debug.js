@@ -11,7 +11,7 @@ import { GetValKey } from '../App';
 import { auth, database } from '../Firebase';
 import { styles } from '../Styles';
 
-export default function DebugScreen(/*{ user }*/) {
+export default function DebugScreen() {
 
     const [user, authLoading, authError] = useAuthState(auth);
 

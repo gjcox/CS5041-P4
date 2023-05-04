@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
-import { equalTo, limitToLast, onValue, orderByChild, push, query, ref, serverTimestamp } from "firebase/database";
+import { push, ref, serverTimestamp } from "firebase/database";
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 
+import { Context } from '../Context';
 import { auth, database } from '../Firebase';
+import useInterval from '../helper_functions/useInterval';
 
-const Activity = Object.freeze({
+export const Activity = Object.freeze({
     sleep: 'sleep',
     feed: 'eat',
     hide: 'hide',
@@ -15,62 +17,75 @@ const Activity = Object.freeze({
     exercise: 'exercise',
 })
 
-/* The following code is adapted from https://github.com/cs5041/p4/blob/main/interaction/index.js, by CS5041 (probably Xue Zhu). Accessed 03/05/2023. */
-function scale(fromRange, toRange) {
-    const d = (toRange[1] - toRange[0]) / (fromRange[1] - fromRange[0]);
-    return from => (from - fromRange[0]) * d + toRange[0];
-};
-/* End of adapted code. */
+/**
+    * Converts a Date object into a time of day representation as minutes from midnight. 
+    * 
+    * @param {Date} date 
+    * @returns a number between 0 and 1440
+    */
+export function getMinuteTime(date) {
+    var hours = date.getHours()
+    var mins = date.getMinutes()
+    return 60 * hours + mins
+}
+
+export function getTimeFromMinutes(minuteTime) {
+    let hour = "" + Math.round(minuteTime / 60)
+    let minutes = "" + minuteTime % 60
+    return `${hour.padStart(2, 0)}:${minutes.padStart(2, 0)}`
+}
+
+export function getSeason(month) {
+    if ([11, 0, 1].includes(month)) {
+        return 0 // winter
+    } else if ([2, 3, 4].includes(month)) {
+        return 1 // spring
+    } else if ([5, 6, 7].includes(month)) {
+        return 2 // summer
+    } else if ([8, 9, 10].includes(month)) {
+        return 3 // autumn
+    }
+}
 
 export default function RabbitSim() {
 
-    const maxRabbitHide = 1 // max number of times the rabbit will hide in a row
-
     const [user, authLoading, authError] = useAuthState(auth);
 
-    const [activityMsg, setActivityMsg] = useState("")
-    const [simEnvData, setSimEnvData] = useState({
-        // user/physical inputs 
-        temp: { updateFromDisplay: true, value: 19 },
-        humidity: { updateFromDisplay: true, value: 50 },
-        time: { updateFromDisplay: true, value: getMinuteTime(new Date()) },
-        season: { updateFromDisplay: true, value: getSeason((new Date().getMonth())) },
-        visitor1: { updateFromDisplay: true, value: false },
-        visitor2: { updateFromDisplay: true, value: false },
-        randomChoice: { updateFromDisplay: true, value: 50 }, // maps to saturation; 0-100
-    })
+    const {
+        simEnvData, setSimEnvData,
+        raining, setRaining,
+        rabbitInside, setRabbitInside,
+        rabbitActivity, setRabbitActivity,
+    } = useContext(Context)
 
     const maxMsBetweenActivityMsg = 60 * 1000
+    const [activityMsg, setActivityMsg] = useState("")
     const [lastActivityMsgTime, setLastActivityMsgTime] = useState(Date.now())
 
-    const [raining, setRaining] = useState(false)
-    const [rabbitInside, setRabbitInside] = useState(false)
-    const [rabbitActivity, setRabbitActivity] = useState(Activity.play)
+    const [observationMsg, setObservationMsg] = useState("")
+
+    const maxRabbitHide = 1 // max number of times the rabbit will hide in a row
     const [rabbitHidingCounter, setRabbitHidingCounter] = useState(0)
     const [rabbitSleepingCounter, setRabbitSleepingCounter] = useState(0)
 
-    /* The following code is taken from https://overreacted.io/making-setinterval-declarative-with-react-hooks/, by Dan Abramov. Accessed 03/05/2023.*/
-    function useInterval(callback, delay) {
-        const savedCallback = useRef();
+    const seasons = ['winter', 'spring', 'summer', 'autumn']
 
-        // Remember the latest callback.
-        useEffect(() => {
-            savedCallback.current = callback;
-        }, [callback]);
-
-        // Set up the interval.
-        useEffect(() => {
-            function tick() {
-                savedCallback.current();
-            }
-            if (delay !== null) {
-                let id = setInterval(tick, delay);
-                return () => clearInterval(id);
-            }
-        }, [delay]);
-    }
-    /* End of code by Dan Abramov. */
-
+    const rabbitFacts = [
+        "Rabbits are crepuscular: we are mostly active near dawn and dusk, and at certain times of night.",
+        "Rabbits do not like getting wet! We groom ourselves with our tongues to stay clean.",
+        /* Following information taken from  https://www.natgeokids.com/uk/discover/animals/general-animals/10-hopping-fun-rabbit-facts/,
+        by National Geographic. Accessed 04/05/2023.*/
+        "A baby rabbit is called a kit or kitten.",
+        "A female rabbit is called a doe.",
+        "A male rabbits is called is a buck.",
+        "Rabbits are very social creatures, and we get lonely without other rabbits.",
+        "Rabbits live in warrens, which are tunnels and rooms that we dig underground.",
+        "A rabbit's teeth never stop growing! They are continually worn down when we eat.",
+        "Rabbits perform a leap called a 'binky' when we are happy, twisting and kicking in the air.",
+        "Rabbits' eyes are on the sides of our heads, so we can see almost all the way around us!",
+        "Like cats, rabbits purr when we're content and relaxed.",
+        /* End of information from National Geographic. */
+    ]
 
     function incrementCounters() {
         if (rabbitActivity == Activity.hide) {
@@ -89,38 +104,8 @@ export default function RabbitSim() {
                 setRabbitSleepingCounter(rabbitSleepingCounter - 1)
                 console.log('rabbitSleepingCounter: ', rabbitSleepingCounter - 1)
             }
-        }
-    }
-
-    /**
-        * Converts a Date object into a time of day representation as minutes from midnight. 
-        * 
-        * @param {Date} date 
-        * @returns a number between 0 and 1440
-        */
-    function getMinuteTime(date) {
-        var hours = date.getHours()
-        var mins = date.getMinutes()
-        return 60 * hours + mins
-    }
-
-    function getTimeFromMinutes(minuteTime) {
-        let hour = Math.round(minuteTime / 60)
-        let minutes = minuteTime % 60
-        return `${hour}:${minutes}`
-    }
-
-    const seasons = ['winter', 'spring', 'summer', 'autumn']
-
-    function getSeason(month) {
-        if ([11, 0, 1].includes(month)) {
-            return 0 // winter
-        } else if ([2, 3, 4].includes(month)) {
-            return 1 // spring
-        } else if ([5, 6, 7].includes(month)) {
-            return 2 // summer
-        } else if ([8, 9, 10].includes(month)) {
-            return 3 // autumn
+        } else {
+            setRabbitSleepingCounter(0)
         }
     }
 
@@ -138,28 +123,50 @@ export default function RabbitSim() {
             setActivityMsg(newMsg)
             setLastActivityMsgTime(Date.now())
         } else if (msElapsed >= maxMsBetweenActivityMsg) {
-            setActivityMsg(newMsg + " Still.")
+            // print a random rabbit fact 
+            setActivityMsg(rabbitFacts[Math.floor(Math.random() * rabbitFacts.length)])
             setLastActivityMsgTime(Date.now())
         }
     }
 
-    function writeActivityMessage() {
-        if (activityMsg.toString() == '') {
-            return
+    function setObservationMsgWrapper(newMsg) {
+        if (newMsg != observationMsg) {
+            setObservationMsg(newMsg)
         }
-        if (user) {
-            console.log(`RabbitSim.writeMessage: "${activityMsg}"`)
+    }
+
+    function writeToOLED(text) {
+        if (text == '' || !text) {
+            console.log(`RabbitSim.writeToOLED called when text==${text}`)
+
+        } else if (user) {
+            console.log(`RabbitSim.writeToOLED: "${text}"`)
             push(ref(database, "data"), {
                 userId: user.uid,
                 groupId: 20,
                 timestamp: serverTimestamp(),
                 type: "str",
-                string: activityMsg.toString()
+                string: text.toString()
             });
         } else {
-            console.log(`RabbitSim.writeMessage called when user==null`)
+            console.log(`RabbitSim.writeToOLED called when user==${user}`)
         }
-        // TODO update custom channel for P5 
+    }
+
+    function writeActivityToOLED() {
+        if (activityMsg.toString() == '') {
+            return
+        } else {
+            writeToOLED(activityMsg)
+        }
+    }
+
+    function writeObservationToOLED() {
+        if (activityMsg.toString() == '') {
+            return
+        } else {
+            writeToOLED(activityMsg)
+        }
     }
 
     // Approximate daylight hours taken from https://www.scotlandinfo.eu/daylight-hours-sunrise-and-sunset-times/. Accessed 03/05/2023. 
@@ -203,6 +210,7 @@ export default function RabbitSim() {
     }
 
     /**
+     * Determines if the current temperature is too cold for the rabbit.
      * N.B. The museum's exhibit limits hue <-> temperature conversions to 0-20°C.
      */
     function tooCold() {
@@ -216,6 +224,7 @@ export default function RabbitSim() {
     }
 
     /**
+     * Determines if the current temperature is too warm for the rabbit.
      * N.B. The museum's exhibit limits hue <-> temperature conversions to 0-20°C.
      */
     function tooWarm() {
@@ -228,6 +237,10 @@ export default function RabbitSim() {
         }
     }
 
+    /**
+     * Checks if the current weather will cause the rabbit to seek shelter.
+     * @returns false if the rabbit would not shelter, else the reason to shelter.
+     */
     function checkBadWeather() {
         if (raining) {
             return "it is raining"
@@ -240,6 +253,12 @@ export default function RabbitSim() {
         }
     }
 
+    /**
+     * Updates rabbitInside and rabbitActivity. 
+     * 
+     * @param {boolean} newIsInside 
+     * @param {string} newActivity 
+     */
     function setActivity(newIsInside, newActivity) {
         if (newIsInside != rabbitInside) {
             setRabbitInside(newIsInside)
@@ -251,23 +270,25 @@ export default function RabbitSim() {
         }
     }
 
+    /* track how long the rabbit has been hiding*/
     useEffect(() => {
         console.log('rabbitHidingCounter: ', rabbitHidingCounter)
     }, [rabbitHidingCounter])
 
+    // When the environment changes (importantly temp and humidity) determine if raining 
     useEffect(() => {
         let nowRaining = simEnvData.humidity.value >= 1.5 * simEnvData.temp.value + 60
         if (nowRaining != raining) {
             setRaining(nowRaining)
             console.log('raining: ', nowRaining)
+            setObservationMsgWrapper(`It has ${nowRaining ? 'started' : 'stopped'} raining.`)
         }
     }, [simEnvData])
 
     // When the rabbit's environment changes, determine its new activity
-    // Also determine new activity when counter increments
     useEffect(() => {
         updateRabbitActivity()
-    }, [simEnvData, raining, /*rabbitInside*/])
+    }, [simEnvData, raining])
 
     // Every activityUpdatePeriod ms, update rabbit activity
     const activityUpdatePeriod = 60 * 1000 // ms 
@@ -276,81 +297,15 @@ export default function RabbitSim() {
         updateRabbitActivity()
     }, activityUpdatePeriod)
 
-    // When the rabbit's activity changes, write the new activity
+    // When the activity message changes, write the new activity
     useEffect(() => {
-        writeActivityMessage()
+        writeActivityToOLED()
     }, [activityMsg])
 
-    function updateSimValue(key, newValue) {
-        if (simEnvData[key].updateFromDisplay && newValue != simEnvData[key].value) {
-            setSimEnvData({
-                ...simEnvData,
-                [key]: { ...simEnvData[key], value: newValue },
-            })
-            console.log(`simEnvData[${key}].value = ${newValue}`)
-            if (key == 'visitor1' && newValue == 0) {
-                setActivityMsgWrapper("I think the visitor has gone away.")
-            }
-        }
-    }
-
-    // On light hue change, update the temperature 
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(21), limitToLast(1)), (snapshot) => {
-        let newHue = Object.values(snapshot?.val())[0].integer ?? 0 // 0-360
-        let scaleHueToTemp = scale([0, 360], [0, 20])
-        let scaledTemp = Math.round(scaleHueToTemp(Math.max(0, Math.min(360, newHue))))
-        updateSimValue('temp', scaledTemp)
-    });
-
-    // On light saturation change, update the random choice  
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(22), limitToLast(1)), (snapshot) => {
-        let newRandomChoice = Math.round(Object.values(snapshot?.val())[0].integer ?? 0) // 0-100
-        updateSimValue('randomChoice', newRandomChoice)
-    });
-
-    // On light brightness change, update the time of day
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(22), limitToLast(1)), (snapshot) => {
-        let newBrightness = Math.round(Object.values(snapshot?.val())[0].integer ?? 0) // 0-100 -> 0-1440
-        let scaleBrightToTime = scale([0, 100], [0, 720])
-        let scaledTime = Math.round(scaleBrightToTime(Math.max(0, Math.min(100, newBrightness))))
-        if (newBrightness % 2 == 1) scaledTime += 720 // odd values are noon to midnight 
-        updateSimValue('time', scaledTime)
-    });
-
-    // On motion detector 1 change, update visitor presence  
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(3), limitToLast(1)), (snapshot) => {
-        let newVisitor = Object.values(snapshot?.val())[0].integer ?? 0 == 1
-        updateSimValue('visitor1', newVisitor)
-    });
-
-    // On motion detector 2 change, update visitor presence  
-    // Might get rid of this, since it changes hue anyway 
-    // onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(4), limitToLast(1)), (snapshot) => {
-    //     let newVisitor = Object.values(snapshot?.val())[0].integer ?? 0 == 1
-    //     updateSimValue('visitor2', newVisitor)
-    // });
-
-    // On change to outside humidity, determine if it is raining 
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(11), limitToLast(1)), (snapshot) => {
-        let newHumidity = Object.values(snapshot?.val())[0].integer ?? 0
-        updateSimValue('humidity', newHumidity)
-    });
-
-    // On grey rabbit contact, move the rabbit outside   
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(8), limitToLast(1)), (snapshot) => {
-        let withGreyRabbit = Object.values(snapshot?.val())[0].integer ?? 0 == 1
-        if (withGreyRabbit && rabbitInside) {
-            setRabbitInside(false)
-        }
-    });
-
-    // On white rabbit contact, move the rabbit inside   
-    onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(8), limitToLast(1)), (snapshot) => {
-        let withWhiteRabbit = Object.values(snapshot?.val())[0].integer ?? 0 == 1
-        if (withWhiteRabbit && !rabbitInside) {
-            setRabbitInside(true)
-        }
-    });
+    // When the observation message changes, write the new observation
+    useEffect(() => {
+        writeObservationToOLED()
+    }, [observationMsg])
 
     /**
      * This is the rabbit's brain.
@@ -359,69 +314,75 @@ export default function RabbitSim() {
         let badWeather = checkBadWeather()
         let rabbitWakeful = checkRabbitWakeful()
 
-        if (!rabbitInside) {
-            // rabbit is outside 
-            if (simEnvData.visitor1.value || simEnvData.visitor2.value) {
-                setActivityMsgWrapper(buildMessage(true, true, Activity.hide, "I have seen a visitor"))
-                setActivity(true, Activity.hide)
-            } else if (!rabbitWakeful) {
-                setActivityMsgWrapper(buildMessage(true, true, Activity.sleep, `rabbits are crepuscular and it is ${getTimeFromMinutes(simEnvData.time.value)}`))
-                setActivity(true, Activity.sleep)
-            } else if (badWeather) {
-                setActivityMsgWrapper(buildMessage(true, true, Activity.shelter, badWeather))
-                setActivity(true, Activity.shelter)
-            } else if (simEnvData.randomChoice.value <= 33) {
-                setActivityMsgWrapper(buildMessage(false, false, Activity.feed, "I am hungry"))
-                setActivity(false, Activity.feed)
-            } else if (simEnvData.randomChoice.value <= 66) {
-                setActivityMsgWrapper(buildMessage(false, false, `${Activity.play} with the grey rabbit`, "I am feeling playful"))
-                setActivity(false, Activity.play)
-            } else {
-                setActivityMsgWrapper(buildMessage(false, false, Activity.exercise, "I want to"))
-                setActivity(false, Activity.exercise)
-            }
+        if (rabbitWakeful && rabbitActivity == Activity.sleep) {
+            setObservationMsgWrapper("I have woken up.")
+        }
+
+        if (rabbitActivity == Activity.hide && !simEnvData.visitor) {
+            setObservationMsgWrapper("I think the visitor has gone away.")
+        }
+
+        if (rabbitActivity == Activity.sleep && !rabbitWakeful) {
+            setActivityMsgWrapper("Zzzzzz")
+        } else if (!rabbitWakeful) {
+            setActivityMsgWrapper(buildMessage(!rabbitInside, true, Activity.sleep, `rabbits are crepuscular and it is ${getTimeFromMinutes(simEnvData.time.value)}`))
+            setActivity(true, Activity.sleep)
         } else {
-            // rabbit is inside 
-            if (rabbitActivity == Activity.hide && (simEnvData.visitor1.value || simEnvData.visitor2.value) && rabbitHidingCounter < maxRabbitHide) {
-                setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "the visitor is still outside"))
-            } else if (rabbitActivity == Activity.hide && (simEnvData.visitor1.value || simEnvData.visitor2.value) && rabbitHidingCounter == maxRabbitHide) {
-                setActivityMsgWrapper("I am getting used to the visitor and will stop hiding soon.")
-            } else if ((simEnvData.visitor1.value || simEnvData.visitor2.value) && rabbitHidingCounter < maxRabbitHide) {
-                setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "I heard a visitor outside"))
-                setActivity(true, Activity.hide)
-            } else if (badWeather) {
-                setActivityMsgWrapper(buildMessage(false, true, Activity.shelter, `${badWeather} outside`))
-                setActivity(true, Activity.shelter)
-            } else if (rabbitActivity == Activity.sleep && !rabbitWakeful) {
-                setActivityMsgWrapper("Zzzzzz")
-            } else if (!rabbitWakeful) {
-                setActivityMsgWrapper(buildMessage(false, true, Activity.sleep, `rabbits are crepuscular and it is ${getTimeFromMinutes(simEnvData.time.value)}`))
-                setActivity(true, Activity.sleep)
-            } else if (simEnvData.randomChoice.value <= 20) {
-                setActivityMsgWrapper(buildMessage(false, true, Activity.feed, "I am hungry"))
-                setActivity(true, Activity.feed)
-            } else if (simEnvData.randomChoice.value <= 40) {
-                setActivityMsgWrapper(buildMessage(false, true, `${Activity.play} with the white rabbit`, "I am feeling playful"))
-                setActivity(true, Activity.play)
-            } // below this, the rabbit moves outside 
-            else if (simEnvData.randomChoice.value <= 60) {
-                setActivityMsgWrapper(buildMessage(true, false, Activity.feed, "I am hungry"))
-                setActivity(false, Activity.feed)
-            } else if (simEnvData.randomChoice.value <= 80) {
-                setActivityMsgWrapper(buildMessage(true, false, `${Activity.play} with the grey rabbit`, "I am feeling playful"))
-                setActivity(false, Activity.feed)
+            // rabbit awake 
+            if (!rabbitInside) {
+                // rabbit is outside 
+                if (simEnvData.visitor.value) {
+                    setActivityMsgWrapper(buildMessage(true, true, Activity.hide, "I have seen a visitor"))
+                    setActivity(true, Activity.hide)
+                } else if (badWeather) {
+                    setActivityMsgWrapper(buildMessage(true, true, Activity.shelter, badWeather))
+                    setActivity(true, Activity.shelter)
+                } else if (simEnvData.randomChoice.value <= 33) {
+                    setActivityMsgWrapper(buildMessage(false, false, Activity.feed, "I am hungry"))
+                    setActivity(false, Activity.feed)
+                } else if (simEnvData.randomChoice.value <= 66) {
+                    setActivityMsgWrapper(buildMessage(false, false, `${Activity.play} with the grey rabbit`, "I am feeling playful"))
+                    setActivity(false, Activity.play)
+                } else {
+                    setActivityMsgWrapper(buildMessage(false, false, Activity.exercise, "I want to"))
+                    setActivity(false, Activity.exercise)
+                }
             } else {
-                setActivityMsgWrapper(buildMessage(true, false, Activity.exercise, "I want to"))
-                setActivity(false, Activity.exercise)
+                // rabbit is inside 
+                if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter < maxRabbitHide) {
+                    setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "the visitor is still outside"))
+                } else if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter == maxRabbitHide) {
+                    setActivityMsgWrapper("I am getting used to the visitor and will stop hiding soon.")
+                } else if ((simEnvData.visitor.value) && rabbitHidingCounter < maxRabbitHide) {
+                    setActivityMsgWrapper(buildMessage(false, true, Activity.hide, "I heard a visitor outside"))
+                    setActivity(true, Activity.hide)
+                } else if (badWeather) {
+                    setActivityMsgWrapper(buildMessage(false, true, Activity.shelter, `${badWeather} outside`))
+                    setActivity(true, Activity.shelter)
+                } else if (simEnvData.randomChoice.value <= 20) {
+                    setActivityMsgWrapper(buildMessage(false, true, Activity.feed, "I am hungry"))
+                    setActivity(true, Activity.feed)
+                } else if (simEnvData.randomChoice.value <= 40) {
+                    setActivityMsgWrapper(buildMessage(false, true, `${Activity.play} with the white rabbit`, "I am feeling playful"))
+                    setActivity(true, Activity.play)
+                } // below this, the rabbit moves outside 
+                else if (simEnvData.randomChoice.value <= 60) {
+                    setActivityMsgWrapper(buildMessage(true, false, Activity.feed, "I am hungry"))
+                    setActivity(false, Activity.feed)
+                } else if (simEnvData.randomChoice.value <= 80) {
+                    setActivityMsgWrapper(buildMessage(true, false, `${Activity.play} with the grey rabbit`, "I am feeling playful"))
+                    setActivity(false, Activity.feed)
+                } else {
+                    setActivityMsgWrapper(buildMessage(true, false, Activity.exercise, "I want to"))
+                    setActivity(false, Activity.exercise)
+                }
             }
         }
     }
 
     return (
         <div>
-            {
-                user && activityMsg ? true : false
-            }
+            {user ? true : false}
         </div>
     )
 }
