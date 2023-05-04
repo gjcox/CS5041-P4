@@ -42,3 +42,12 @@ export function getSeason(month) {
 }
 
 export const seasons = ['winter', 'spring', 'summer', 'autumn']
+
+/** Approximate daylight hours taken from https://www.scotlandinfo.eu/daylight-hours-sunrise-and-sunset-times/. Accessed 03/05/2023. */
+export const seasonalDawnDusk = [
+    { dawn: 8 * 60 + 45, dusk: 16 * 60 + 25 }, // daylight 8:45-16:25 in winter 
+    { dawn: 6 * 60 + 20, dusk: 20 * 60 + 30 }, // daylight 6:20-20:30 in spring 
+    { dawn: 5 * 60 + 0, dusk: 22 * 60 + 0 }, // daylight 5:00-22:00 in summer 
+    { dawn: 7 * 60 + 55, dusk: 18 * 60 + 25 }, // daylight 7:55-18:25 in autumn 
+]
+
