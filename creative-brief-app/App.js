@@ -19,7 +19,8 @@ import { auth, database, firebaseToken, functions } from './Firebase';
 import { styles } from './Styles';
 import { ColoredBunny } from './components/ColoredBunny';
 import { Group20Input } from './components/Group20Input';
-import RabbitSim, { Activity, getMinuteTime, getSeason } from './components/RabbitSim';
+import RabbitSim, { Activity } from './components/RabbitSim';
+import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from './helper_functions/scale';
 import DebugScreen from './screens/Debug';
 
@@ -76,7 +77,7 @@ export default function App() {
 
   // On motion detector 1 change, update visitor presence  
   onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(3), limitToLast(1)), (snapshot) => {
-    let newVisitor = Object.values(snapshot?.val())[0].integer ?? 0 == 1
+    let newVisitor = (Object.values(snapshot?.val())[0].integer ?? 0) == 1
     updateSimValue('visitor', newVisitor)
   });
 
@@ -86,17 +87,17 @@ export default function App() {
     updateSimValue('humidity', newHumidity)
   });
 
-  // On grey rabbit contact, move the rabbit outside   
+  // On grey rabbit contact, move the rabbit outside 
   onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(8), limitToLast(1)), (snapshot) => {
-    let withGreyRabbit = Object.values(snapshot?.val())[0].integer ?? 0 == 1
+    let withGreyRabbit = (Object.values(snapshot?.val())[0].integer ?? 0) == 1
     if (withGreyRabbit && rabbitInside) {
       setRabbitInside(false)
     }
   });
 
-  // On white rabbit contact, move the rabbit inside   
+  // On white rabbit contact, move the rabbit inside 
   onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(8), limitToLast(1)), (snapshot) => {
-    let withWhiteRabbit = Object.values(snapshot?.val())[0].integer ?? 0 == 1
+    let withWhiteRabbit = (Object.values(snapshot?.val())[0].integer ?? 0) == 1
     if (withWhiteRabbit && !rabbitInside) {
       setRabbitInside(true)
     }
@@ -106,6 +107,7 @@ export default function App() {
   const [rabbitInside, setRabbitInside] = useState(false)
   const [rabbitActivity, setRabbitActivity] = useState(Activity.play)
 
+  /* Authenticate with token upon load */
   useEffect(() => {
     (async () => {
       const getToken = httpsCallable(functions, "getToken");
