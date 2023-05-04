@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { push, ref, serverTimestamp } from "firebase/database";
 
@@ -7,6 +7,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Context } from '../Context';
 import { auth, database } from '../Firebase';
 import useInterval from '../helper_functions/useInterval';
+import { getTimeFromMinutes, seasons } from '../helper_functions/dateAndTime';
 
 export const Activity = Object.freeze({
     sleep: 'sleep',
@@ -16,36 +17,6 @@ export const Activity = Object.freeze({
     play: 'play',
     exercise: 'exercise',
 })
-
-/**
-    * Converts a Date object into a time of day representation as minutes from midnight. 
-    * 
-    * @param {Date} date 
-    * @returns a number between 0 and 1440
-    */
-export function getMinuteTime(date) {
-    var hours = date.getHours()
-    var mins = date.getMinutes()
-    return 60 * hours + mins
-}
-
-export function getTimeFromMinutes(minuteTime) {
-    let hour = "" + Math.round(minuteTime / 60)
-    let minutes = "" + minuteTime % 60
-    return `${hour.padStart(2, 0)}:${minutes.padStart(2, 0)}`
-}
-
-export function getSeason(month) {
-    if ([11, 0, 1].includes(month)) {
-        return 0 // winter
-    } else if ([2, 3, 4].includes(month)) {
-        return 1 // spring
-    } else if ([5, 6, 7].includes(month)) {
-        return 2 // summer
-    } else if ([8, 9, 10].includes(month)) {
-        return 3 // autumn
-    }
-}
 
 export default function RabbitSim() {
 
@@ -67,8 +38,6 @@ export default function RabbitSim() {
     const maxRabbitHide = 1 // max number of times the rabbit will hide in a row
     const [rabbitHidingCounter, setRabbitHidingCounter] = useState(0)
     const [rabbitSleepingCounter, setRabbitSleepingCounter] = useState(0)
-
-    const seasons = ['winter', 'spring', 'summer', 'autumn']
 
     const rabbitFacts = [
         "Rabbits are crepuscular: we are mostly active near dawn and dusk, and at certain times of night.",
@@ -137,7 +106,7 @@ export default function RabbitSim() {
 
     function writeToOLED(text) {
         if (text == '' || !text) {
-            console.log(`RabbitSim.writeToOLED called when text==${text}`)
+            console.log(`RabbitSim.writeToOLED called when text=="${text}"`)
 
         } else if (user) {
             console.log(`RabbitSim.writeToOLED: "${text}"`)
@@ -150,22 +119,6 @@ export default function RabbitSim() {
             });
         } else {
             console.log(`RabbitSim.writeToOLED called when user==${user}`)
-        }
-    }
-
-    function writeActivityToOLED() {
-        if (activityMsg.toString() == '') {
-            return
-        } else {
-            writeToOLED(activityMsg)
-        }
-    }
-
-    function writeObservationToOLED() {
-        if (activityMsg.toString() == '') {
-            return
-        } else {
-            writeToOLED(activityMsg)
         }
     }
 
@@ -299,12 +252,12 @@ export default function RabbitSim() {
 
     // When the activity message changes, write the new activity
     useEffect(() => {
-        writeActivityToOLED()
+        writeToOLED(activityMsg)
     }, [activityMsg])
 
     // When the observation message changes, write the new observation
     useEffect(() => {
-        writeObservationToOLED()
+        writeToOLED(observationMsg)
     }, [observationMsg])
 
     /**
@@ -325,7 +278,8 @@ export default function RabbitSim() {
         if (rabbitActivity == Activity.sleep && !rabbitWakeful) {
             setActivityMsgWrapper("Zzzzzz")
         } else if (!rabbitWakeful) {
-            setActivityMsgWrapper(buildMessage(!rabbitInside, true, Activity.sleep, `rabbits are crepuscular and it is ${getTimeFromMinutes(simEnvData.time.value)}`))
+            setActivityMsgWrapper(buildMessage(!rabbitInside, true, Activity.sleep,
+                `rabbits are crepuscular and it is ${getTimeFromMinutes(simEnvData.time.value)} in ${seasons[simEnvData.season.value]}`))
             setActivity(true, Activity.sleep)
         } else {
             // rabbit awake 
