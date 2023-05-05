@@ -1,4 +1,4 @@
-import { Card } from 'react-native-paper';
+import { Card } from "react-native-paper";
 
 function LoggedNull({ i, iMax }) {
   console.log(`CardComponent was passed empty message. i=${i} iMax=${iMax}.`);
@@ -6,17 +6,20 @@ function LoggedNull({ i, iMax }) {
 }
 
 export const CardComponent = ({ message, i, iMax }) => {
-  if (message != '') {
+  if (message != "") {
     return (
-      <Card style={{
-        marginLeft: 10, marginRight: 10, marginTop: i === 0 ? 0 : 10, marginBottom: i === iMax ? 0 : 10
-      }}>
+      <Card
+        style={{
+          marginLeft: 10,
+          marginRight: 10,
+          marginTop: i === 0 ? 0 : 10,
+          marginBottom: i === iMax ? 0 : 10,
+        }}
+      >
         <Card.Title title={message} />
       </Card>
     );
+  } else {
+    return <LoggedNull i={i} iMax={iMax} />;
   }
-  else {
-    return (<LoggedNull i={i} iMax={iMax} />)
-  }
-}
-
+};
