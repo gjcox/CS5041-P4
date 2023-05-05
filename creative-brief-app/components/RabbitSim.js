@@ -46,7 +46,7 @@ export default function RabbitSim() {
         by National Geographic. Accessed 04/05/2023.*/
         "A baby rabbit is called a kit or kitten.",
         "A female rabbit is called a doe.",
-        "A male rabbits is called is a buck.",
+        "A male rabbit is called is a buck.",
         "Rabbits are very social creatures, and we get lonely without other rabbits.",
         "Rabbits live in warrens, which are tunnels and rooms that we dig underground.",
         "A rabbit's teeth never stop growing! They are continually worn down when we eat.",
