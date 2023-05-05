@@ -4,10 +4,12 @@ import React, { useContext, useState, useEffect } from 'react'
 import sketch from '../sketch/sketch'
 import P5WrapperConstructor from '../components/P5Wrapper'
 import { Context } from '../Context'
+import NPC from '../sketch/NPC'
 
 const P5Wrapper1 = P5WrapperConstructor("RabbitSim")
 
 export default function P5Screen() {
+    // canvas 
     const canvasWidth = 800;
     const canvasHeight = 800;
     const gridDims = [100, 100];
@@ -16,7 +18,17 @@ export default function P5Screen() {
     const pixelWidth = canvasWidth / gridDims[0];
     const pixelHeight = canvasHeight / gridDims[1];
 
+    // NPCs
+    const rabbitWidth = pixelWidth * 2;
+    const rabbitHeight = pixelHeight * 3;
+    const visitorWidth = pixelWidth * 10;
+    const visitorHeight = pixelHeight * 20;
+
+    // variable state 
     const [pixels, setPixels] = useState([])
+    const [greyRabbit, setGreyRabbit] = useState({})
+    const [whiteRabbit, setWhiteRabbit] = useState({})
+    const [visitor, setVisitor] = useState({})
 
     const {
         simEnvData,
@@ -63,6 +75,28 @@ export default function P5Screen() {
         return tempPixels
     }
 
+    function getCenterOfRoom(roomIndex) {
+        let room = rooms[roomIndex];
+        return [
+            (room[0] + room[2] / 2) * pixelHeight,
+            (room[1] + room[3] / 2) * pixelWidth,
+        ];
+    }
+
+    /**
+     * Determines if an (x,y) coordinate on the canvas is at the top of a grass or wall pixel.
+     * @param {*} x 
+     * @param {*} y 
+     * @returns 
+     */
+    function onGroundWrapper(tempPixels) {
+        return (x, y) => {
+            let row = Math.floor(y / pixelHeight);
+            let col = Math.floor(x / pixelWidth);
+            return [2, 4].includes(tempPixels[row][col]);
+        }
+    }
+
     function worldSetup() {
         // create the heavens and the earth
         let tempPixels = []
@@ -88,6 +122,34 @@ export default function P5Screen() {
         }
 
         setPixels(tempPixels);
+
+        // add white and grey rabbits
+        setGreyRabbit(new NPC(
+            canvasWidth * 0.5,
+            0, // above ground 
+            rabbitWidth,
+            rabbitHeight,
+            "grey",
+            onGroundWrapper(tempPixels)
+        ));
+        setWhiteRabbit(new NPC(
+            ...getCenterOfRoom(3),
+            rabbitWidth,
+            rabbitHeight,
+            "white",
+            onGroundWrapper(tempPixels)
+        ));
+
+        // add visitor
+        setVisitor(new NPC(
+            canvasWidth * 0.8,
+            0, // above ground 
+            visitorWidth,
+            visitorHeight,
+            "orangered",
+            onGroundWrapper(tempPixels)
+        ))
+
     }
 
     useEffect(() => {
@@ -107,7 +169,10 @@ export default function P5Screen() {
                     pixelWidth: pixelWidth,
                     pixelHeight: pixelHeight,
                     canvasWidth: canvasWidth,
-                    canvasHeight: canvasHeight
+                    canvasHeight: canvasHeight,
+                    greyRabbit: greyRabbit,
+                    whiteRabbit: whiteRabbit,
+                    visitor: visitor
                 }}
             /> : false
             }

@@ -14,9 +14,8 @@ export default function (s) {
 
     s.draw = () => {
         s.noStroke();
-        // s.colorMode(s.HSB);
-        // s.background(...skyColour(s.state.simEnvData.time.value, s.state.simEnvData.season.value, s.state.raining))
 
+        // draw the background 
         for (let row = 0; row < s.state.pixels.length; row++) {
             let y = row * s.state.pixelHeight;
             for (let col = 0; col < s.state.pixels[row].length; col++) {
@@ -28,9 +27,16 @@ export default function (s) {
                 } else {
                     s.fill(...colour)
                 }
-                s.square(x, y, s.state.pixelWidth, s.state.pixelHeight);
+                s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
             }
         }
+
+        // draw the grey and white rabbits 
+        renderRabbit(s.state.greyRabbit)
+        renderRabbit(s.state.whiteRabbit)
+
+        // conditionally draw visitor 
+        if (s.state.simEnvData.visitor.value) renderVisitor(s.state.visitor)
     }
 
     function pixelColour(int) {
@@ -75,6 +81,23 @@ export default function (s) {
             //daytime 
             return [180, 75, 75]
         }
+    }
+
+    function renderRabbit(npc) {
+        npc.applyGravity()
+        s.noStroke()
+        s.fill(npc.colour)
+        s.rect(npc.x, npc.y - npc.h, npc.w, npc.h)
+    }
+
+    function renderVisitor(npc) {
+        npc.applyGravity()
+        s.noStroke()
+        s.fill(npc.colour)
+        s.triangle(
+            npc.x, npc.y,
+            npc.x + npc.w, npc.y,
+            npc.x + npc.w / 2, npc.y - npc.h)
     }
 }
 
