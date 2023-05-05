@@ -72,7 +72,7 @@ export default function App() {
     let newBrightness = Math.round(Object.values(snapshot?.val())[0].integer ?? 0) // 0-100 -> 0-1440
     let scaleBrightToTime = scale([0, 100], [0, 720])
     let scaledTime = Math.round(scaleBrightToTime(Math.max(0, Math.min(100, newBrightness))))
-    if (newBrightness % 2 == 1) scaledTime += 720 // odd values are noon to midnight 
+    if (newBrightness % 2 == 1) scaledTime = 1440 - scaledTime // odd values are noon to midnight 
     updateSimValue('time', scaledTime)
   });
 
