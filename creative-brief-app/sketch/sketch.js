@@ -1,16 +1,15 @@
 /* This code is adapted from https://github.com/atorov/react-hooks-p5js by Veselin. Accessed 04/05/2023.*/
 
-import { checkNearDawnDusk, getTimeFromMinutes, seasonalDawnDusk } from "../helper_functions/dateAndTime"
+import { checkNearDawnDusk, seasonalDawnDusk } from "../helper_functions/dateAndTime"
+import { DIRT, GRASS, ROOM, SKY, WALL, canvasHeight, canvasWidth } from "./canvasSettings"
 
 export default function (s) {
     s.state = {}
     // s.dispatch = () => { }
 
     s.setup = () => {
-        s.createCanvas(800, 800)
-        // s.createCanvas(s.state.canvasWidth, s.state.canvasHeight)
-        // console.log("sketch has been initialised with state: ", Object.keys(s.state))
-    }
+        s.createCanvas(canvasWidth, canvasHeight)
+     }
 
     s.draw = () => {
         s.noStroke();
@@ -37,28 +36,26 @@ export default function (s) {
 
         // conditionally draw visitor 
         if (s.state.simEnvData.visitor.value) renderVisitor(s.state.visitor)
+   
+        // draw little rabbit
+        renderRabbit(s.state.littleRabbit)
     }
 
     function pixelColour(int) {
         switch (int) {
-            case 0:
-                // sky 
+            case SKY:
                 return skyColour(
                     s.state.simEnvData.time.value,
                     s.state.simEnvData.season.value,
                     s.state.raining
                 )
-            case 1:
-                // dirt 
+            case DIRT:
                 return 'sienna'
-            case 2:
-                // warren wall
+            case WALL:
                 return 'saddlebrown'
-            case 3:
-                // warren room
-                return 'tan'
-            case 4:
-                // grass
+            case ROOM:
+                return 'sandybrown'
+            case GRASS:
                 return 'forestgreen'
         }
     }
@@ -99,6 +96,7 @@ export default function (s) {
             npc.x + npc.w, npc.y,
             npc.x + npc.w / 2, npc.y - npc.h)
     }
+
 }
 
 /* End of adapted code */
