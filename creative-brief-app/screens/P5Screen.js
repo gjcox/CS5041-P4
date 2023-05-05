@@ -37,7 +37,6 @@ export default function P5Screen() {
     const [whiteRabbit, setWhiteRabbit] = useState({})
     const [visitor, setVisitor] = useState({})
     const [littleRabbit, setLittleRabbit] = useState({})
-    const [lRabbitTargetRoom, setLRabbitTargetRoom] = useState(3)
 
     const {
         simEnvData,
@@ -58,8 +57,13 @@ export default function P5Screen() {
         [60, skyDepth + 14, 10, 7], // 5 room with food/bedding
         [25, skyDepth + 21, 5, 5], // 6 vertical tunnel into room 7 
         [15, skyDepth + 26, 15, 7], // 7 room for hiding
-        [0, 0, skyDepth]
+        [1, 1, Math.floor(gridDims[0] * 0.33), skyDepth - 2], // left-hand third above ground 
+        [Math.floor(gridDims[0] * 0.33), 1, Math.floor(gridDims[0] * 0.66), skyDepth - 2], // middle third above ground 
+        [Math.floor(gridDims[0] * 0.66), 1, gridDims[0], skyDepth - 2], // right-hand third above ground 
     ];
+
+    const insideRooms = [2, 3, 4, 5, 6, 7]
+    const outsideRooms = [8, 9, 10]
 
     /**
      * N.B. x and y are relative to gridDims, not canvas
@@ -134,40 +138,39 @@ export default function P5Screen() {
         setPixels(tempPixels);
 
         // add white and grey rabbits
-        setGreyRabbit(new NPC(
-            canvasWidth * 0.5,
-            0, // above ground 
-            npcRabbitWidth,
-            npcRabbitHeight,
-            "grey",
-            onGroundWrapper(tempPixels)
-        ));
-        setWhiteRabbit(new NPC(
-            ...getCenterOfRoom(3),
-            npcRabbitWidth,
-            npcRabbitHeight,
-            "white",
-            onGroundWrapper(tempPixels)
-        ));
+        setGreyRabbit(new NPC({
+            xy: [canvasWidth * 0.5, 0],
+            w: npcRabbitWidth,
+            h: npcRabbitHeight,
+            colour: "grey",
+            onGround: onGroundWrapper(tempPixels)
+        }));
+        setWhiteRabbit(new NPC({
+            xy: getCenterOfRoom(3),
+            w: npcRabbitWidth,
+            h: npcRabbitHeight,
+            colour: "white",
+            onGround: onGroundWrapper(tempPixels)
+        }));
 
         // add visitor
-        setVisitor(new NPC(
-            canvasWidth * 0.8,
-            0, // above ground 
-            visitorWidth,
-            visitorHeight,
-            "orangered",
-            onGroundWrapper(tempPixels)
+        setVisitor(new NPC({
+            xy: [canvasWidth * 0.8, 0],
+            w: visitorWidth,
+            h: visitorHeight,
+            colour: "orangered",
+            onGround: onGroundWrapper(tempPixels)
+        }
         ))
 
         // add little rabbit 
-        setLittleRabbit(new NPC(
-            ...getCenterOfRoom(5),
-            littleRabbitWidth,
-            littleRabbitHeight,
-            "lightgrey",
-            onGroundWrapper(tempPixels)
-        ))
+        setLittleRabbit(new NPC({
+            xy: getCenterOfRoom(5),
+            w: littleRabbitWidth,
+            h: littleRabbitHeight,
+            colour: "lightgrey",
+            onGround: onGroundWrapper(tempPixels)
+        }))
     }
 
     // set up the world when component renders 
@@ -177,16 +180,42 @@ export default function P5Screen() {
 
     // move the little rabbit when the activity changes 
     useEffect(() => {
-        let x, y
-        switch (rabbitActivity) {
-            case Activity.sleep:
-            case Activity.feed:
-                setLRabbitTargetRoom(5)
-                break
-            case Activity.hide:
-                setLRabbitTargetRoom(7)
-            default:
-                setLRabbitTargetRoom(3)
+        if (littleRabbit instanceof NPC) {
+            let xy
+            switch (rabbitActivity) {
+                case Activity.sleep:
+                    xy = getCenterOfRoom(5)
+                    break
+                case Activity.feed:
+                    if (rabbitInside.value) {
+                        xy = getCenterOfRoom(5)
+                    } else {
+                        xy = getCenterOfRoom(outsideRooms[Math.floor(Math.random() * outsideRooms.length)])
+                    }
+                    break
+                case Activity.play:
+                    if (rabbitInside.value) {
+                        xy = getCenterOfRoom(3)
+                    } else {
+                        xy = getCenterOfRoom(9)
+                    }
+                    break;
+                case Activity.hide:
+                    xy = getCenterOfRoom(7)
+                    break;                
+                case Activity.shelter:
+                    xy = getCenterOfRoom(insideRooms[Math.floor(Math.random() * insideRooms.length)])
+                case Activity.exercise:
+                    if (rabbitInside.value) {
+                        xy = getCenterOfRoom(3)
+                    } else {
+                        xy = getCenterOfRoom(outsideRooms[Math.floor(Math.random() * outsideRooms.length)])
+                    }
+                    break;
+                default:
+                    xy = getCenterOfRoom(3)
+            }
+            setLittleRabbit(new NPC({ ...littleRabbit, xy: xy }))
         }
     }, [rabbitActivity])
 
@@ -208,7 +237,6 @@ export default function P5Screen() {
                     whiteRabbit: whiteRabbit,
                     visitor: visitor,
                     littleRabbit: littleRabbit,
-                    littleRabbitTargetRoom: lRabbitTargetRoom,
                 }}
             /> : false
             }

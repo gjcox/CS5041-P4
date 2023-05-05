@@ -1,7 +1,8 @@
 /* This code is adapted from https://github.com/atorov/react-hooks-p5js by Veselin. Accessed 04/05/2023.*/
 
+import { Activity } from "../components/RabbitSim"
 import { checkNearDawnDusk, seasonalDawnDusk } from "../helper_functions/dateAndTime"
-import { DIRT, GRASS, ROOM, SKY, WALL, canvasHeight, canvasWidth } from "./canvasSettings"
+import { DIRT, GRASS, ROOM, SKY, WALL, canvasHeight, canvasWidth, pixelHeight } from "./canvasSettings"
 
 export default function (s) {
     s.state = {}
@@ -9,7 +10,7 @@ export default function (s) {
 
     s.setup = () => {
         s.createCanvas(canvasWidth, canvasHeight)
-     }
+    }
 
     s.draw = () => {
         s.noStroke();
@@ -36,9 +37,16 @@ export default function (s) {
 
         // conditionally draw visitor 
         if (s.state.simEnvData.visitor.value) renderVisitor(s.state.visitor)
-   
+
         // draw little rabbit
         renderRabbit(s.state.littleRabbit)
+        s.textSize(pixelHeight * 1.5)
+        s.textAlign(s.CENTER, s.BOTTOM);
+        s.text(
+            activityText(),
+            s.state.littleRabbit.x + s.state.littleRabbit.w / 2,
+            s.state.littleRabbit.y - s.state.littleRabbit.h,
+        )
     }
 
     function pixelColour(int) {
@@ -97,6 +105,22 @@ export default function (s) {
             npc.x + npc.w / 2, npc.y - npc.h)
     }
 
+    function activityText() {
+        switch (s.state.rabbitActivity) {
+            case Activity.sleep:
+                return "Zzzzz..."
+            case Activity.feed:
+                return "*munching*"
+            case Activity.play:
+                return "*playing*"
+            case Activity.exercise:
+                return "*exercising*"
+            case Activity.hide:
+                return "*hiding*"
+            case Activity.shelter:
+                return "*sheltering*"
+        }
+    }
 }
 
 /* End of adapted code */
