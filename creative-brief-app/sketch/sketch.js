@@ -14,6 +14,8 @@ import {
   canvasHeight,
   canvasWidth,
   pixelHeight,
+  pixelWidth,
+  skyDepth,
 } from "./canvasSettings";
 
 export default function (s) {
@@ -43,6 +45,8 @@ export default function (s) {
       }
     }
 
+    drawWeather();
+
     // draw the grey and white rabbits
     renderRabbit(s.state.greyRabbit);
     renderRabbit(s.state.whiteRabbit);
@@ -59,10 +63,6 @@ export default function (s) {
       s.state.littleRabbit.x + s.state.littleRabbit.w / 2,
       s.state.littleRabbit.y - s.state.littleRabbit.h
     );
-
-    if (s.state.raining) {
-      s.state.raindrops.map(drawRainDrop);
-    }
   };
 
   function pixelColour(int) {
@@ -142,11 +142,51 @@ export default function (s) {
     }
   }
 
+  function drawWeather() {
+    // TODO stop sun and moon clipping with the dirt 
+    let time = s.state.simEnvData.time.value;
+    let season = s.state.simEnvData.season.value;
+    let { dawn, dusk } = seasonalDawnDusk[season];
+    if (s.state.raining) {
+      s.state.raindrops.map(drawRainDrop);
+    } else if (time < dawn || time > dusk) {
+      drawMoon(time, dawn, dusk);
+    } else {
+      drawSun(time, dawn, dusk);
+    }
+  }
+
   function drawRainDrop(drop) {
     s.noStroke();
     s.fill(255);
     s.ellipse(drop.x, drop.y, s.random(1, 5), s.random(1, 5));
     drop.update();
+  }
+
+  function drawSun(time, dawn, dusk) {
+    let y;
+    let x = s.map(time, dawn, dusk, 0, canvasWidth);
+    if (time < 720) {
+      y = skyDepth - s.map(time, dawn, 720, 0, skyDepth);
+    } else {
+      y = skyDepth - s.map(time, 720, dusk, 0, skyDepth);
+    }
+    s.fill("gold");
+    s.circle(x, y, pixelWidth * 15);
+  }
+
+  function drawMoon(time, dawn, dusk) {
+    // TODO check this works 
+    let x, y;
+    if (time < 720) {
+      y = skyDepth - s.map(time, 0, dawn, 0, skyDepth);
+      x = s.map(time, 0, dawn, canvasWidth / 2, canvasWidth);
+    } else {
+      y = skyDepth - s.map(time, dusk, 1440, skyDepth, 0);
+      x = s.map(time, dusk, 1440, 0, canvasWidth / 2);
+    }
+    s.fill("ghostwhite");
+    s.circle(x, y, pixelWidth * 10);
   }
 }
 

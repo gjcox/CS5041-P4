@@ -30,4 +30,4 @@ export const GRASS = 4;
 // rain
 export const rain = new Array(200)
   .fill(null)
-  .map(() => new RainDrop(canvasWidth, skyDepthFactor * canvasHeight));
+  .map(() => new RainDrop(canvasWidth, skyDepth));
