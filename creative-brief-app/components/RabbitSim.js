@@ -35,6 +35,8 @@ export default function RabbitSim() {
 
     const [observationMsg, setObservationMsg] = useState("")
 
+    const hoursAwake = 2 // hours either side of dawn and dusk that the rabbit is awake for 
+
     const maxRabbitHide = 1 // max number of times the rabbit will hide in a row
     const [rabbitHidingCounter, setRabbitHidingCounter] = useState(0)
     const [rabbitSleepingCounter, setRabbitSleepingCounter] = useState(0)
@@ -69,7 +71,7 @@ export default function RabbitSim() {
             console.log('rabbitHidingCounter: ', Math.max(0, rabbitHidingCounter - 1))
         }
 
-        if (!checkNearDawnDusk()) {
+        if (!checkNearDawnDusk(simEnvData.season.value, simEnvData.time.value, hoursAwake)) {
             if (rabbitActivity == Activity.sleep) {
                 setRabbitSleepingCounter(rabbitSleepingCounter + 1)
                 console.log('rabbitSleepingCounter: ', rabbitSleepingCounter + 1)
@@ -129,7 +131,7 @@ export default function RabbitSim() {
     function checkRabbitWakeful() {
         let dawn = seasonalDawnDusk[simEnvData.season.value].dawn
         let dusk = seasonalDawnDusk[simEnvData.season.value].dusk
-        if (checkNearDawnDusk(simEnvData.season.value, simEnvData.time.value)) {
+        if (checkNearDawnDusk(simEnvData.season.value, simEnvData.time.value, hoursAwake)) {
             // rabbit active for a couple of hours either side of dawn and dusk 
             return true
         } else if (simEnvData.time.value < dawn || simEnvData.time.value > dusk) {
