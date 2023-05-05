@@ -7,7 +7,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Context } from '../Context';
 import { auth, database } from '../Firebase';
 import useInterval from '../helper_functions/useInterval';
-import { getTimeFromMinutes, seasons, seasonalDawnDusk } from '../helper_functions/dateAndTime';
+import { getTimeFromMinutes, seasons, seasonalDawnDusk, checkNearDawnDusk } from '../helper_functions/dateAndTime';
 
 export const Activity = Object.freeze({
     sleep: 'sleep',
@@ -126,19 +126,10 @@ export default function RabbitSim() {
         }
     }
 
-    function checkNearDawnDusk() {
-        let dawn = seasonalDawnDusk[simEnvData.season.value].dawn
-        let dusk = seasonalDawnDusk[simEnvData.season.value].dusk
-        let marginOfError = 2 // hours either side of dawn and dusk 
-        if (Math.min(Math.abs(simEnvData.time.value - dawn), Math.abs(simEnvData.time.value - dusk)) < marginOfError * 60) {
-            return true
-        }
-    }
-
     function checkRabbitWakeful() {
         let dawn = seasonalDawnDusk[simEnvData.season.value].dawn
         let dusk = seasonalDawnDusk[simEnvData.season.value].dusk
-        if (checkNearDawnDusk()) {
+        if (checkNearDawnDusk(simEnvData.season.value, simEnvData.time.value)) {
             // rabbit active for a couple of hours either side of dawn and dusk 
             return true
         } else if (simEnvData.time.value < dawn || simEnvData.time.value > dusk) {
