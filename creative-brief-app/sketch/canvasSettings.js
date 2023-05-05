@@ -5,7 +5,8 @@ export const canvasWidth = 800;
 export const canvasHeight = 800;
 export const gridDims = [100, 100];
 export const skyDepthFactor = 0.5; // how screen is sky
-export const skyDepth = skyDepthFactor * gridDims[1];
+export const skyDepth = skyDepthFactor * canvasHeight;
+export const skyGridDepth = skyDepthFactor * gridDims[1];
 export const pixelWidth = canvasWidth / gridDims[0];
 export const pixelHeight = canvasHeight / gridDims[1];
 

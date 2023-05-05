@@ -21,7 +21,7 @@ import {
   pixelHeight,
   pixelWidth,
   rain,
-  skyDepth,
+  skyGridDepth,
   visitorHeight,
   visitorWidth,
 } from "../sketch/canvasSettings";
@@ -43,22 +43,22 @@ export default function P5Screen() {
   // rooms in the warren
   const rooms = [
     // row, col, width, height
-    [10, skyDepth + 1, 5, 10], // 0 vertical tunnel into warren
-    [15, skyDepth + 6, 10, 5], // 1 horizontal tunnel into warren
-    [20, skyDepth + 6, 5, 10], // 2 vertical step into room 3
-    [25, skyDepth + 11, 25, 10], // 3 room with white rabbit
-    [50, skyDepth + 16, 10, 5], // 4 horizontal tunnel into room 5
-    [60, skyDepth + 14, 10, 7], // 5 room with food/bedding
-    [25, skyDepth + 21, 5, 5], // 6 vertical tunnel into room 7
-    [15, skyDepth + 26, 15, 7], // 7 room for hiding
-    [1, 1, Math.floor(gridDims[0] * 0.33), skyDepth - 2], // left-hand third above ground
+    [10, skyGridDepth + 1, 5, 10], // 0 vertical tunnel into warren
+    [15, skyGridDepth + 6, 10, 5], // 1 horizontal tunnel into warren
+    [20, skyGridDepth + 6, 5, 10], // 2 vertical step into room 3
+    [25, skyGridDepth + 11, 25, 10], // 3 room with white rabbit
+    [50, skyGridDepth + 16, 10, 5], // 4 horizontal tunnel into room 5
+    [60, skyGridDepth + 14, 10, 7], // 5 room with food/bedding
+    [25, skyGridDepth + 21, 5, 5], // 6 vertical tunnel into room 7
+    [15, skyGridDepth + 26, 15, 7], // 7 room for hiding
+    [1, 1, Math.floor(gridDims[0] * 0.33), skyGridDepth - 2], // left-hand third above ground
     [
       Math.floor(gridDims[0] * 0.33),
       1,
       Math.floor(gridDims[0] * 0.66),
-      skyDepth - 2,
+      skyGridDepth - 2,
     ], // middle third above ground
-    [Math.floor(gridDims[0] * 0.66), 1, gridDims[0], skyDepth - 2], // right-hand third above ground
+    [Math.floor(gridDims[0] * 0.66), 1, gridDims[0], skyGridDepth - 2], // right-hand third above ground
   ];
 
   const insideRooms = [2, 3, 4, 5, 6, 7];
@@ -116,11 +116,11 @@ export default function P5Screen() {
     for (let row = 0; row < gridDims[0]; row++) {
       let pixelRow = [];
       for (let col = 0; col < gridDims[1]; col++) {
-        if (row < skyDepth) {
+        if (row < skyGridDepth) {
           pixelRow.push(SKY);
-        } else if (row == skyDepth) {
+        } else if (row == skyGridDepth) {
           pixelRow.push(GRASS);
-        } else if (row == skyDepth + 1) {
+        } else if (row == skyGridDepth + 1) {
           pixelRow.push(WALL);
         } else {
           pixelRow.push(DIRT);
