@@ -16,6 +16,7 @@ import {
   pixelHeight,
   pixelWidth,
   skyDepth,
+  skyGridDepth,
 } from "./canvasSettings";
 
 export default function (s) {
@@ -29,12 +30,25 @@ export default function (s) {
   s.draw = () => {
     s.noStroke();
 
-    // draw the background
-    for (let row = 0; row < s.state.pixels.length; row++) {
+    // draw the sky
+    s.colorMode(s.HSB);
+    s.fill(...pixelColour(SKY));
+    for (let row = 0; row < skyGridDepth; row++) {
       let y = row * s.state.pixelHeight;
       for (let col = 0; col < s.state.pixels[row].length; col++) {
         let x = col * s.state.pixelWidth;
-        s.colorMode(s.HSB);
+        s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
+      }
+    }
+
+    drawWeather();
+
+    // draw the ground and burrow
+    s.colorMode(s.HSB);
+    for (let row = skyGridDepth; row < s.state.pixels.length; row++) {
+      let y = row * s.state.pixelHeight;
+      for (let col = 0; col < s.state.pixels[row].length; col++) {
+        let x = col * s.state.pixelWidth;
         let colour = pixelColour(s.state.pixels[row][col]);
         if (typeof colour == "string") {
           s.fill(colour);
@@ -44,8 +58,6 @@ export default function (s) {
         s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
       }
     }
-
-    drawWeather();
 
     // draw the grey and white rabbits
     renderRabbit(s.state.greyRabbit);
@@ -143,7 +155,7 @@ export default function (s) {
   }
 
   function drawWeather() {
-    // TODO stop sun and moon clipping with the dirt 
+    // TODO stop sun and moon clipping with the dirt
     let time = s.state.simEnvData.time.value;
     let season = s.state.simEnvData.season.value;
     let { dawn, dusk } = seasonalDawnDusk[season];
@@ -176,7 +188,7 @@ export default function (s) {
   }
 
   function drawMoon(time, dawn, dusk) {
-    // TODO check this works 
+    // TODO check this works
     let x, y;
     if (time < 720) {
       y = skyDepth - s.map(time, 0, dawn, 0, skyDepth);
