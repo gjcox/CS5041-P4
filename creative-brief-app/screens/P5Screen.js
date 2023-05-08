@@ -11,8 +11,7 @@ import {
   ROOM,
   SKY,
   WALL,
-  canvasHeight,
-  canvasWidth,
+  canvasSideLength,
   gridDims,
   littleRabbitHeight,
   littleRabbitWidth,
@@ -141,7 +140,7 @@ export default function P5Screen() {
     // add white and grey rabbits
     setGreyRabbit(
       new NPC({
-        xy: [canvasWidth * 0.5, 0],
+        xy: [canvasSideLength * 0.5, 0],
         w: npcRabbitWidth,
         h: npcRabbitHeight,
         colour: "grey",
@@ -161,7 +160,7 @@ export default function P5Screen() {
     // add visitor
     setVisitor(
       new NPC({
-        xy: [canvasWidth * 0.8, 0],
+        xy: [canvasSideLength * 0.8, 0],
         w: visitorWidth,
         h: visitorHeight,
         colour: "orangered",
@@ -247,8 +246,7 @@ export default function P5Screen() {
             pixels: pixels,
             pixelWidth: pixelWidth,
             pixelHeight: pixelHeight,
-            canvasWidth: canvasWidth,
-            canvasHeight: canvasHeight,
+            canvasSideLength: canvasSideLength,
             greyRabbit: greyRabbit,
             whiteRabbit: whiteRabbit,
             visitor: visitor,

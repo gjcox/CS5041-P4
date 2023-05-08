@@ -1,14 +1,13 @@
 import RainDrop from "./RainDrop";
 
 // canvas
-export const canvasWidth = 800;
-export const canvasHeight = 800;
+export const canvasSideLength = 500;
 export const gridDims = [100, 100];
 export const skyDepthFactor = 0.5; // how much of the screen is sky
-export const skyDepth = skyDepthFactor * canvasHeight;
+export const skyDepth = skyDepthFactor * canvasSideLength;
 export const skyGridDepth = skyDepthFactor * gridDims[1];
-export const pixelWidth = canvasWidth / gridDims[0];
-export const pixelHeight = canvasHeight / gridDims[1];
+export const pixelWidth = canvasSideLength / gridDims[0];
+export const pixelHeight = canvasSideLength / gridDims[1];
 
 // NPCs
 export const npcRabbitWidth = pixelWidth * 2;
@@ -30,4 +29,4 @@ export const GRASS = 4;
 // rain
 export const rain = new Array(200)
   .fill(null)
-  .map(() => new RainDrop(canvasWidth, skyDepth));
+  .map(() => new RainDrop(canvasSideLength, skyDepth));

@@ -19,25 +19,27 @@ const propsFromFeature = {
 
 export default function TableRow({ feature }) {
   const props = propsFromFeature[feature];
-  const { simEnvData, setSimEnvData } =
+  const { simEnvData, setSimEnvData, simEnvUpdate, setSimEnvUpdate } =
     useContext(Context);
   const [sliderVal, setSliderVal] = useState(0);
 
-//   useEffect(() => {
-//     setSliderVal(+simEnvData[feature].value);
-//   }, []);
+  useEffect(() => {
+    setSliderVal(+simEnvData[feature].value);
+  }, []);
+
+  useEffect(() => {
+    if (!simEnvUpdate[feature]) {
+      setSliderVal(+simEnvData[feature].value);
+    }
+  }, [simEnvData]);
 
   function toggleUpdateFromDisplay() {
     console.log(
-      `toggleUpdateFromDisplay: ${feature}=${!simEnvData[feature]
-        .updateFromDisplay}`
+      `toggleUpdateFromDisplay: ${feature}=${!simEnvUpdate[feature]}`
     );
-    setSimEnvData({
-      ...simEnvData,
-      [feature]: {
-        ...simEnvData[feature],
-        updateFromDisplay: !simEnvData[feature].updateFromDisplay,
-      },
+    setSimEnvUpdate({
+      ...simEnvUpdate,
+      [feature]: !simEnvUpdate[feature],
     });
   }
 
@@ -48,7 +50,9 @@ export default function TableRow({ feature }) {
       ...simEnvData,
       [feature]: { ...simEnvData[feature], value: newValue },
     });
-    console.log(`simEnvData[${feature}].value = ${newValue} (${typeof newValue})`);
+    console.log(
+      `simEnvData[${feature}].value = ${newValue} (${typeof newValue})`
+    );
   }
 
   function formatValue(val) {
@@ -70,10 +74,13 @@ export default function TableRow({ feature }) {
 
   return (
     <DataTable.Row
+      // empty onPress allows children to be clickable
       onPress={() => {
         return;
       }}
     >
+      {/* DataTable.Cell components cannot be clickable (a bug),
+        hence using a Grid as a pseudo-row */}
       <Grid container columns={4} alignItems="center">
         <Grid item sm={1}>
           {props.label}
@@ -83,9 +90,7 @@ export default function TableRow({ feature }) {
         </Grid>
         <Grid item sm={1}>
           <Checkbox
-            status={
-              !simEnvData[feature].updateFromDisplay ? "checked" : "unchecked"
-            }
+            status={!simEnvUpdate[feature] ? "checked" : "unchecked"}
             onPress={toggleUpdateFromDisplay}
           />
         </Grid>
@@ -93,7 +98,7 @@ export default function TableRow({ feature }) {
           {formatValue(props.range[0])}
           <input
             type="range"
-            disabled={simEnvData[feature].updateFromDisplay}
+            disabled={simEnvUpdate[feature]}
             min={props.range[0]}
             max={props.range[1]}
             value={sliderVal}

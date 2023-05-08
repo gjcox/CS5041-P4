@@ -11,8 +11,7 @@ import {
   ROOM,
   SKY,
   WALL,
-  canvasHeight,
-  canvasWidth,
+  canvasSideLength,
   pixelHeight,
   pixelWidth,
   skyDepth,
@@ -24,7 +23,7 @@ export default function (s) {
   // s.dispatch = () => { }
 
   s.setup = () => {
-    s.createCanvas(canvasWidth, canvasHeight);
+    s.createCanvas(canvasSideLength, canvasSideLength);
   };
 
   s.draw = () => {
@@ -77,11 +76,11 @@ export default function (s) {
         s.state.littleRabbit.y - s.state.littleRabbit.h
       );
     } catch (error) {
-      s.background('white')
+      s.background("white");
 
       s.fill("black");
       s.textSize(100);
-      s.text("Loading...", canvasWidth / 2, canvasHeight / 2);
+      s.text("Loading...", canvasSideLength / 2, canvasSideLength / 2);
       return;
     }
   };
@@ -170,10 +169,13 @@ export default function (s) {
     let { dawn, dusk } = seasonalDawnDusk[season];
     if (s.state.raining) {
       s.state.raindrops.map(drawRainDrop);
-    } else if (time < dawn || time > dusk) {
-      drawMoon(time, dawn, dusk);
-    } else {
+    } else if (
+      checkNearDawnDusk(season, time, 0.5) ||
+      (time > dawn && time < dusk)
+    ) {
       drawSun(time, dawn, dusk);
+    } else {
+      drawMoon(time, dawn, dusk);
     }
   }
 
@@ -186,11 +188,11 @@ export default function (s) {
 
   function drawSun(time, dawn, dusk) {
     let y;
-    let x = s.map(time, dawn, dusk, 0, canvasWidth);
+    let x = s.map(time, dawn, dusk, 0, canvasSideLength);
     if (time < 720) {
       y = skyDepth - s.map(time, dawn, 720, 0, skyDepth);
     } else {
-      y = skyDepth - s.map(time, 720, dusk, 0, skyDepth);
+      y = s.map(time, 720, dusk, 0, skyDepth);
     }
     s.fill("gold");
     s.circle(x, y, pixelWidth * 15);
@@ -200,11 +202,11 @@ export default function (s) {
     // TODO check this works
     let x, y;
     if (time < 720) {
-      y = skyDepth - s.map(time, 0, dawn, 0, skyDepth);
-      x = s.map(time, 0, dawn, canvasWidth / 2, canvasWidth);
+      y = s.map(time, 0, dawn, 0, skyDepth);
+      x = s.map(time, 0, dawn, canvasSideLength / 2, canvasSideLength);
     } else {
-      y = skyDepth - s.map(time, dusk, 1440, skyDepth, 0);
-      x = s.map(time, dusk, 1440, 0, canvasWidth / 2);
+      y = canvasSideLengths.map(time, dusk, 1440, skyDepth, 0);
+      x = s.map(time, dusk, 1440, 0, canvasSideLength / 2);
     }
     s.fill("ghostwhite");
     s.circle(x, y, pixelWidth * 10);

@@ -68,3 +68,10 @@ export function checkNearDawnDusk(season, time, marginOfError) {
     return true;
   }
 }
+
+export function secondsAgo(time) {
+  return `${(Math.round((Date.now() - time) / 1000) + "").padStart(
+    4,
+    "0"
+  )} s ago`;
+}

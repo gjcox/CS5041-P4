@@ -3,7 +3,7 @@ import { View } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
 
-import { Provider as PaperProvider } from "react-native-paper";
+import { Provider as PaperProvider, Text } from "react-native-paper";
 
 import { signInWithCustomToken } from "firebase/auth";
 import {
@@ -29,8 +29,7 @@ import { Tabs } from "./navigators/TabNavigator";
 import DebugScreen from "./screens/Debug";
 import P5Screen from "./screens/P5Screen";
 
-export const GetValKey = (snapshot) =>
-  snapshot.val().type == "str" ? "string" : "integer";
+var debounceTimer;
 
 export default function App() {
   const [user, authLoading, authError] = useAuthState(auth);
@@ -40,44 +39,42 @@ export default function App() {
 
   const [simEnvData, setSimEnvData] = useState({
     // user/physical inputs
-    temp: { updateFromDisplay: true, value: 19 },
-    humidity: { updateFromDisplay: true, value: 50 },
-    time: { updateFromDisplay: true, value: getMinuteTime(new Date()) },
-    season: {
-      updateFromDisplay: true,
-      value: getSeason(new Date().getMonth()),
-    },
-    visitor: { updateFromDisplay: true, value: false },
-    randomChoice: { updateFromDisplay: true, value: 50 }, // maps to saturation; 0-100
+    temp: { value: 19 },
+    humidity: { value: 50 },
+    time: { value: getMinuteTime(new Date()) },
+    season: { value: getSeason(new Date().getMonth()) },
+    visitor: { value: false },
+    randomChoice: { value: 50 }, // maps to saturation; 0-100
   });
 
-  function setSimEnvDataWrapper(newData) {
-    var debounceTimer;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      // console.log(`setSimEnvDataWrapper: `);
-      // console.log(newData);
-      setSimEnvData(newData);
-    }, 1000);
-  }
+  const [simEnvUpdate, setSimEnvUpdate] = useState({
+    temp: true,
+    humidity: true,
+    time: true,
+    season: true,
+    visitor: true,
+    randomChoice: true,
+  });
 
   function updateSimValue(key, newValue) {
-    if (
-      simEnvData[key].updateFromDisplay &&
-      newValue != simEnvData[key].value
-    ) {
-      setSimEnvDataWrapper({
-        ...simEnvData,
-        [key]: { ...simEnvData[key], value: newValue },
-      });
-      console.log(`updateSimValue[${key}].value=${newValue} (${typeof newValue})`);
+    if (simEnvUpdate[key] && newValue != simEnvData[key].value) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        setSimEnvData({
+          ...simEnvData,
+          [key]: { ...simEnvData[key], value: newValue },
+        });
+        console.log(
+          `updateSimValue[${key}].value=${newValue} (${typeof newValue})`
+        );
+      }, 1000);
     }
   }
 
   useEffect(() => {
-    console.log(`new simEnvData: `)
-    console.log(simEnvData)
-  }, [simEnvData])
+    console.log(`new simEnvData: `);
+    console.log(simEnvData);
+  }, [simEnvData]);
 
   // On light hue change, update the temperature
   onValue(
@@ -229,18 +226,6 @@ export default function App() {
     };
   }, []);
 
-  function Contents() {
-    switch (window.location.pathname.replace("%20", " ").substring(1)) {
-      case Tabs.p5:
-        return <P5Screen />;
-      case Tabs.expo:
-        return <Table />;
-      case Tabs.debug:
-      default:
-        return <DebugScreen />;
-    }
-  }
-
   return (
     <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
       <PaperProvider>
@@ -248,6 +233,8 @@ export default function App() {
           value={{
             simEnvData: simEnvData,
             setSimEnvData: setSimEnvData,
+            simEnvUpdate: simEnvUpdate,
+            setSimEnvUpdate: setSimEnvUpdate,
             raining: raining,
             setRaining: setRaining,
             rabbitInside: rabbitInside,
@@ -258,7 +245,8 @@ export default function App() {
         >
           <RabbitSim style={{ width: "100%" }} />
           <View style={styles.container}>
-            <Contents />
+              <P5Screen />
+              <Table />
           </View>
         </Context.Provider>
       </PaperProvider>

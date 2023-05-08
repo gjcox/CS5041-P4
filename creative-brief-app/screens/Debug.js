@@ -1,5 +1,7 @@
 import { useContext } from "react";
 
+import { View } from "react-native";
+
 import { Card, Text } from "react-native-paper";
 
 import { Grid } from "@mui/material";
@@ -15,42 +17,20 @@ import {
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useList } from "react-firebase-hooks/database";
 
-import { GetValKey } from "../App";
 import { Context } from "../Context";
 import { auth, database } from "../Firebase";
 import { styles } from "../Styles";
-import { getTimeFromMinutes, seasons } from "../helper_functions/dateAndTime";
-import { View } from "react-native";
+import {
+  getTimeFromMinutes,
+  seasons,
+  secondsAgo,
+} from "../helper_functions/dateAndTime";
+import { GetValKey, groupIDs } from "../helper_functions/groupIDs";
 
 export default function DebugScreen() {
   const [user, authLoading, authError] = useAuthState(auth);
   const { simEnvData, raining, rabbitInside, rabbitActivity } =
     useContext(Context);
-
-  function secondsAgo(time) {
-    return `${(Math.round((Date.now() - time) / 1000) + "").padStart(
-      4,
-      "0"
-    )} s ago`;
-  }
-
-  const data = {
-    OLEDText: 20,
-    LightHue: 21,
-    LightSaturation: 22,
-    LightBrightness: 23,
-    Button1: 5,
-    Button2: 6,
-    Button3: 7,
-    OutsideTemperature: 1,
-    InsideTemperature: 2,
-    OutsideHumidity: 11,
-    InsideHumidity: 12,
-    Motion1: 3,
-    Motion2: 4,
-    GreyRabbitContact: 8,
-    WhiteRabbitContact: 9,
-  };
 
   return (
     <View style={styles.container}>
@@ -86,13 +66,13 @@ export default function DebugScreen() {
         </Grid>
 
         {/* IoT devices */}
-        {Object.keys(data).map((key, i) => {
+        {Object.keys(groupIDs).map((key, i) => {
           const [snapshots, loading, error] = useList(
             user
               ? query(
                   ref(database, "data"),
                   orderByChild("groupId"),
-                  equalTo(data[key]),
+                  equalTo(groupIDs[key]),
                   limitToLast(key == "OLEDText" ? 10 : 5)
                 )
               : null
