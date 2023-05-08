@@ -27,6 +27,7 @@ import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
 import useInterval from "./helper_functions/useInterval";
 import P5Screen from "./screens/P5Screen";
+import OLEDText from "./components/OLEDText";
 
 var debounceTimer;
 
@@ -260,7 +261,10 @@ export default function App() {
         >
           <RabbitSim style={{ width: "100%" }} />
           <View style={styles.container}>
-            <P5Screen />
+            <View style={{ ...styles.container, flexDirection: "row" }}>
+              <P5Screen />
+              <OLEDText title="Messages" limitTo={10} width="50%" />
+            </View>
             <Table />
           </View>
         </Context.Provider>
