@@ -5,8 +5,6 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import { Provider as PaperProvider } from "react-native-paper";
 
-import { StatusBar } from "expo-status-bar";
-
 import { signInWithCustomToken } from "firebase/auth";
 import {
   equalTo,
@@ -29,10 +27,10 @@ import { Group20Input } from "./components/Group20Input";
 import RabbitSim, { Activity } from "./components/RabbitSim";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
-import StackNavigator from "./navigators/StackNavigator";
+import { Tabs } from "./navigators/TabNavigator";
 import DebugScreen from "./screens/Debug";
 import P5Screen from "./screens/P5Screen";
-import { Tabs } from "./navigators/TabNavigator";
+import Table from "./components/Table";
 
 export const GetValKey = (snapshot) =>
   snapshot.val().type == "str" ? "string" : "integer";
@@ -291,10 +289,11 @@ export default function App() {
   }, []);
 
   function Contents() {
-    console.log(window.location.pathname.replace("%20", " ").substring(1))
     switch (window.location.pathname.replace("%20", " ").substring(1)) {
       case Tabs.p5:
         return <P5Screen />;
+      case Tabs.expo: 
+        return <Table />
       case Tabs.debug:
       default:
         return <DebugScreen />;
@@ -308,6 +307,7 @@ export default function App() {
           value={{
             simEnvData: simEnvData,
             setSimEnvData: setSimEnvData,
+            updateSimValue: updateSimValue, 
             raining: raining,
             setRaining: setRaining,
             rabbitInside: rabbitInside,
