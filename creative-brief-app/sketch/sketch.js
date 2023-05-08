@@ -30,51 +30,60 @@ export default function (s) {
   s.draw = () => {
     s.noStroke();
 
-    // draw the sky
-    s.colorMode(s.HSB);
-    s.fill(...pixelColour(SKY));
-    for (let row = 0; row < skyGridDepth; row++) {
-      let y = row * s.state.pixelHeight;
-      for (let col = 0; col < s.state.pixels[row].length; col++) {
-        let x = col * s.state.pixelWidth;
-        s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
-      }
-    }
-
-    drawWeather();
-
-    // draw the ground and burrow
-    s.colorMode(s.HSB);
-    for (let row = skyGridDepth; row < s.state.pixels.length; row++) {
-      let y = row * s.state.pixelHeight;
-      for (let col = 0; col < s.state.pixels[row].length; col++) {
-        let x = col * s.state.pixelWidth;
-        let colour = pixelColour(s.state.pixels[row][col]);
-        if (typeof colour == "string") {
-          s.fill(colour);
-        } else {
-          s.fill(...colour);
+    try {
+      // draw the sky
+      s.colorMode(s.HSB);
+      s.fill(...pixelColour(SKY));
+      for (let row = 0; row < skyGridDepth; row++) {
+        let y = row * s.state.pixelHeight;
+        for (let col = 0; col < s.state.pixels[row].length; col++) {
+          let x = col * s.state.pixelWidth;
+          s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
         }
-        s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
       }
+
+      drawWeather();
+
+      // draw the ground and burrow
+      s.colorMode(s.HSB);
+      for (let row = skyGridDepth; row < s.state.pixels.length; row++) {
+        let y = row * s.state.pixelHeight;
+        for (let col = 0; col < s.state.pixels[row].length; col++) {
+          let x = col * s.state.pixelWidth;
+          let colour = pixelColour(s.state.pixels[row][col]);
+          if (typeof colour == "string") {
+            s.fill(colour);
+          } else {
+            s.fill(...colour);
+          }
+          s.rect(x, y, s.state.pixelWidth, s.state.pixelHeight);
+        }
+      }
+
+      // draw the grey and white rabbits
+      renderRabbit(s.state.greyRabbit);
+      renderRabbit(s.state.whiteRabbit);
+
+      // conditionally draw visitor
+      if (s.state.simEnvData.visitor.value) renderVisitor(s.state.visitor);
+
+      // draw little rabbit
+      renderRabbit(s.state.littleRabbit);
+      s.textSize(pixelHeight * 1.5);
+      s.textAlign(s.CENTER, s.BOTTOM);
+      s.text(
+        activityText(),
+        s.state.littleRabbit.x + s.state.littleRabbit.w / 2,
+        s.state.littleRabbit.y - s.state.littleRabbit.h
+      );
+    } catch (error) {
+      s.background('white')
+
+      s.fill("black");
+      s.textSize(100);
+      s.text("Loading...", canvasWidth / 2, canvasHeight / 2);
+      return;
     }
-
-    // draw the grey and white rabbits
-    renderRabbit(s.state.greyRabbit);
-    renderRabbit(s.state.whiteRabbit);
-
-    // conditionally draw visitor
-    if (s.state.simEnvData.visitor.value) renderVisitor(s.state.visitor);
-
-    // draw little rabbit
-    renderRabbit(s.state.littleRabbit);
-    s.textSize(pixelHeight * 1.5);
-    s.textAlign(s.CENTER, s.BOTTOM);
-    s.text(
-      activityText(),
-      s.state.littleRabbit.x + s.state.littleRabbit.w / 2,
-      s.state.littleRabbit.y - s.state.littleRabbit.h
-    );
   };
 
   function pixelColour(int) {

@@ -17,20 +17,17 @@ import {
 import { httpsCallable } from "firebase/functions";
 
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useList } from "react-firebase-hooks/database";
 
 import { Context } from "./Context";
 import { auth, database, firebaseToken, functions } from "./Firebase";
 import { styles } from "./Styles";
-import { ColoredBunny } from "./components/ColoredBunny";
-import { Group20Input } from "./components/Group20Input";
 import RabbitSim, { Activity } from "./components/RabbitSim";
+import Table from "./components/Table";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
 import { Tabs } from "./navigators/TabNavigator";
 import DebugScreen from "./screens/Debug";
 import P5Screen from "./screens/P5Screen";
-import Table from "./components/Table";
 
 export const GetValKey = (snapshot) =>
   snapshot.val().type == "str" ? "string" : "integer";
@@ -54,18 +51,33 @@ export default function App() {
     randomChoice: { updateFromDisplay: true, value: 50 }, // maps to saturation; 0-100
   });
 
+  function setSimEnvDataWrapper(newData) {
+    var debounceTimer;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      // console.log(`setSimEnvDataWrapper: `);
+      // console.log(newData);
+      setSimEnvData(newData);
+    }, 1000);
+  }
+
   function updateSimValue(key, newValue) {
     if (
       simEnvData[key].updateFromDisplay &&
       newValue != simEnvData[key].value
     ) {
-      setSimEnvData({
+      setSimEnvDataWrapper({
         ...simEnvData,
         [key]: { ...simEnvData[key], value: newValue },
       });
-      console.log(`simEnvData[${key}].value = ${newValue}`);
+      console.log(`updateSimValue[${key}].value=${newValue} (${typeof newValue})`);
     }
   }
+
+  useEffect(() => {
+    console.log(`new simEnvData: `)
+    console.log(simEnvData)
+  }, [simEnvData])
 
   // On light hue change, update the temperature
   onValue(
@@ -236,7 +248,6 @@ export default function App() {
           value={{
             simEnvData: simEnvData,
             setSimEnvData: setSimEnvData,
-            updateSimValue: updateSimValue,
             raining: raining,
             setRaining: setRaining,
             rabbitInside: rabbitInside,

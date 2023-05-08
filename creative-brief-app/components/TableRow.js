@@ -19,13 +19,13 @@ const propsFromFeature = {
 
 export default function TableRow({ feature }) {
   const props = propsFromFeature[feature];
-  const { simEnvData, setSimEnvData, raining, rabbitInside, rabbitActivity } =
+  const { simEnvData, setSimEnvData } =
     useContext(Context);
   const [sliderVal, setSliderVal] = useState(0);
 
-  useEffect(() => {
-    setSliderVal(+simEnvData[feature].value);
-  }, []);
+//   useEffect(() => {
+//     setSliderVal(+simEnvData[feature].value);
+//   }, []);
 
   function toggleUpdateFromDisplay() {
     console.log(
@@ -42,13 +42,13 @@ export default function TableRow({ feature }) {
   }
 
   function setSimValue() {
-    let newValue = feature != "visitor" ? sliderVal : sliderVal == 1;
+    let newValue = feature != "visitor" ? +sliderVal : sliderVal == 1;
     console.log(`setSimValue: ${feature}=${newValue}`);
     setSimEnvData({
       ...simEnvData,
       [feature]: { ...simEnvData[feature], value: newValue },
     });
-    console.log(`simEnvData[${feature}].value = ${newValue}`);
+    console.log(`simEnvData[${feature}].value = ${newValue} (${typeof newValue})`);
   }
 
   function formatValue(val) {
