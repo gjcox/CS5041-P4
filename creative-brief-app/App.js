@@ -25,8 +25,7 @@ import RabbitSim, { Activity } from "./components/RabbitSim";
 import Table from "./components/Table";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
-import { Tabs } from "./navigators/TabNavigator";
-import DebugScreen from "./screens/Debug";
+import useInterval from "./helper_functions/useInterval";
 import P5Screen from "./screens/P5Screen";
 
 var debounceTimer;
@@ -56,6 +55,15 @@ export default function App() {
     randomChoice: true,
   });
 
+  /**
+   * Updates the simulation to reflect values from the Firebase database.
+   * Values should have already been converted to reflect the intended feature.
+   *
+   * Updates are debounced to try to cope with other students spamming the database.
+   *
+   * @param {*} key the simulated environment feature
+   * @param {*} newValue the new value for the feature
+   */
   function updateSimValue(key, newValue) {
     if (simEnvUpdate[key] && newValue != simEnvData[key].value) {
       clearTimeout(debounceTimer);
@@ -64,6 +72,7 @@ export default function App() {
           ...simEnvData,
           [key]: { ...simEnvData[key], value: newValue },
         });
+
         console.log(
           `updateSimValue[${key}].value=${newValue} (${typeof newValue})`
         );
@@ -71,10 +80,16 @@ export default function App() {
     }
   }
 
+  // log when simEnvData actually updates
   useEffect(() => {
     console.log(`new simEnvData: `);
     console.log(simEnvData);
   }, [simEnvData]);
+
+  // Once per minute, update time
+  useInterval(() => {
+    updateSimValue("time", getMinuteTime(new Date()));
+  }, 1000 * 60);
 
   // On light hue change, update the temperature
   onValue(
@@ -121,8 +136,8 @@ export default function App() {
     (snapshot) => {
       let newBrightness = Math.round(
         Object.values(snapshot?.val())[0].integer ?? 0
-      ); // 0-100 -> 0-1440
-      let scaleBrightToTime = scale([0, 100], [0, 720]);
+      );
+      let scaleBrightToTime = scale([0, 100], [0, 720]); // 0-100 -> 0-1440
       let scaledTime = Math.round(
         scaleBrightToTime(Math.max(0, Math.min(100, newBrightness)))
       );
@@ -245,8 +260,8 @@ export default function App() {
         >
           <RabbitSim style={{ width: "100%" }} />
           <View style={styles.container}>
-              <P5Screen />
-              <Table />
+            <P5Screen />
+            <Table />
           </View>
         </Context.Provider>
       </PaperProvider>
