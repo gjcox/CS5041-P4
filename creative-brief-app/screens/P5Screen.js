@@ -26,6 +26,8 @@ import {
   visitorWidth,
 } from "../sketch/canvasSettings";
 import sketch from "../sketch/sketch";
+import { View } from "react-native";
+import { styles } from "../Styles";
 
 const P5Wrapper1 = P5WrapperConstructor("RabbitSim");
 
@@ -233,7 +235,7 @@ export default function P5Screen() {
   }, [rabbitActivity]);
 
   return (
-    <div>
+    <View style={styles.container}>
       {window.p5 ? (
         <P5Wrapper1
           sketch={sketch}
@@ -257,7 +259,7 @@ export default function P5Screen() {
       ) : (
         false
       )}
-    </div>
+    </View>
   );
 }
 /* End of adapted code */

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
+import { NavigationContainer } from "@react-navigation/native";
+
 import { Provider as PaperProvider } from "react-native-paper";
 
 import { StatusBar } from "expo-status-bar";
-
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { signInWithCustomToken } from "firebase/auth";
 import {
@@ -29,14 +29,19 @@ import { Group20Input } from "./components/Group20Input";
 import RabbitSim, { Activity } from "./components/RabbitSim";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
+import StackNavigator from "./navigators/StackNavigator";
 import DebugScreen from "./screens/Debug";
 import P5Screen from "./screens/P5Screen";
+import { Tabs } from "./navigators/TabNavigator";
 
 export const GetValKey = (snapshot) =>
   snapshot.val().type == "str" ? "string" : "integer";
 
 export default function App() {
   const [user, authLoading, authError] = useAuthState(auth);
+  const linking = {
+    prefixes: [],
+  };
 
   const [simEnvData, setSimEnvData] = useState({
     // user/physical inputs
@@ -285,9 +290,20 @@ export default function App() {
     };
   }, []);
 
+  function Contents() {
+    console.log(window.location.pathname.replace("%20", " ").substring(1))
+    switch (window.location.pathname.replace("%20", " ").substring(1)) {
+      case Tabs.p5:
+        return <P5Screen />;
+      case Tabs.debug:
+      default:
+        return <DebugScreen />;
+    }
+  }
+
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.container}>
+    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+      <PaperProvider>
         <Context.Provider
           value={{
             simEnvData: simEnvData,
@@ -300,12 +316,12 @@ export default function App() {
             setRabbitActivity: setRabbitActivity,
           }}
         >
-          <RabbitSim />
-          {/* <DebugScreen /> */}
-          <P5Screen />
+          <RabbitSim style={{ width: "100%" }} />
+          <View style={styles.container}>
+            <Contents />
+          </View>
         </Context.Provider>
-        <StatusBar style="auto" />
-      </SafeAreaView>
-    </PaperProvider>
+      </PaperProvider>
+    </NavigationContainer>
   );
 }

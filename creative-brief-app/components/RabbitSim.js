@@ -425,5 +425,5 @@ export default function RabbitSim() {
     }
   }
 
-  return <div>{user ? true : false}</div>;
+  return <div style={{width: '100%'}}>{user ? true : false}</div>;
 }

@@ -8,4 +8,18 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 10,
   },
+  containerBlack: {
+    flex: 1,
+    backgroundColor: "#000",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
+  containerMaxWidth: {
+    width: "100%",
+    backgroundColor: "#aaa",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
 });
