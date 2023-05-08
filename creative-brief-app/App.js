@@ -201,78 +201,7 @@ export default function App() {
     })();
   }, []);
 
-  const [oledSnapshots, oledLoading, oledError] = useList(
-    user
-      ? query(
-          ref(database, "data"),
-          orderByChild("groupId"),
-          equalTo(20),
-          limitToLast(5)
-        )
-      : null
-  );
-  const [insideSnapshots, insideLoading, insideError] = useList(
-    user
-      ? query(
-          ref(database, "data"),
-          orderByChild("groupId"),
-          equalTo(2),
-          limitToLast(5)
-        )
-      : null
-  );
-  const [hueSnapshots, hueLoading, hueError] = useList(
-    user
-      ? query(
-          ref(database, "data"),
-          orderByChild("groupId"),
-          equalTo(21),
-          limitToLast(1)
-        )
-      : null
-  );
-  const [satSnapshots, satLoading, satError] = useList(
-    user
-      ? query(
-          ref(database, "data"),
-          orderByChild("groupId"),
-          equalTo(22),
-          limitToLast(1)
-        )
-      : null
-  );
-  const [briSnapshots, briLoading, briError] = useList(
-    user
-      ? query(
-          ref(database, "data"),
-          orderByChild("groupId"),
-          equalTo(23),
-          limitToLast(1)
-        )
-      : null
-  );
-
-  function MessageScreen() {
-    return (
-      <View>
-        <Group20Input user={user}></Group20Input>
-        {/* {oledSnapshots ?
-        <Messages messages={oledSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
-        : null}
-      {insideSnapshots ?
-        <Messages messages={insideSnapshots.map(el => el?.val()[GetValKey(el)] ?? '')}></Messages>
-        : null} */}
-        {hueSnapshots && satSnapshots && briSnapshots ? (
-          <ColoredBunny
-            hueSnapshots={hueSnapshots}
-            satSnapshots={satSnapshots}
-            briSnapshots={briSnapshots}
-          />
-        ) : null}
-      </View>
-    );
-  }
-
+  // add p5 library to DOM upon load
   useEffect(() => {
     const script = document.createElement("script");
 
@@ -292,8 +221,8 @@ export default function App() {
     switch (window.location.pathname.replace("%20", " ").substring(1)) {
       case Tabs.p5:
         return <P5Screen />;
-      case Tabs.expo: 
-        return <Table />
+      case Tabs.expo:
+        return <Table />;
       case Tabs.debug:
       default:
         return <DebugScreen />;
@@ -307,7 +236,7 @@ export default function App() {
           value={{
             simEnvData: simEnvData,
             setSimEnvData: setSimEnvData,
-            updateSimValue: updateSimValue, 
+            updateSimValue: updateSimValue,
             raining: raining,
             setRaining: setRaining,
             rabbitInside: rabbitInside,

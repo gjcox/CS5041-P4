@@ -9,8 +9,8 @@ import TableRow from "./TableRow";
 const TableHeader = () => (
   <DataTable.Header>
     <DataTable.Title>Feature</DataTable.Title>
-    <DataTable.Title>Exhibit Value</DataTable.Title>
-    <DataTable.Title>Use Exhibit Value</DataTable.Title>
+    <DataTable.Title></DataTable.Title>
+    <DataTable.Title>Use Remote Value</DataTable.Title>
     <DataTable.Title>Remote Value</DataTable.Title>
   </DataTable.Header>
 );
