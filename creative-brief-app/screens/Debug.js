@@ -25,7 +25,7 @@ import {
   seasons,
   secondsAgo,
 } from "../helper_functions/dateAndTime";
-import { GetValKey, groupIDs } from "../helper_functions/groupIDs";
+import { GetValKey, groupIds } from "../helper_functions/groupIds";
 
 export default function DebugScreen() {
   const [user, authLoading, authError] = useAuthState(auth);
@@ -66,13 +66,13 @@ export default function DebugScreen() {
         </Grid>
 
         {/* IoT devices */}
-        {Object.keys(groupIDs).map((key, i) => {
+        {Object.keys(groupIds).map((key, i) => {
           const [snapshots, loading, error] = useList(
             user
               ? query(
                   ref(database, "data"),
                   orderByChild("groupId"),
-                  equalTo(groupIDs[key]),
+                  equalTo(groupIds[key]),
                   limitToLast(key == "OLEDText" ? 10 : 5)
                 )
               : null

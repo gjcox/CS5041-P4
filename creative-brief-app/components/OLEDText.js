@@ -13,9 +13,13 @@ import { useList } from "react-firebase-hooks/database";
 
 import { auth, database } from "../Firebase";
 import { secondsAgo } from "../helper_functions/dateAndTime";
-import { GetValKey, groupIDs } from "../helper_functions/groupIDs";
+import { GetValKey, groupIds } from "../helper_functions/groupIds";
 
-export default function OLEDText({ title, limitTo }) {
+export default function OLEDText({
+  title = "Messages",
+  limitTo = 5,
+  width = "auto",
+}) {
   const [user, authLoading, authError] = useAuthState(auth);
 
   const [snapshots, loading, error] = useList(
@@ -23,27 +27,31 @@ export default function OLEDText({ title, limitTo }) {
       ? query(
           ref(database, "data"),
           orderByChild("groupId"),
-          equalTo(groupIDs["OLEDText"]),
+          equalTo(groupIds.OLEDText),
           limitToLast(limitTo)
         )
       : null
   );
 
   return (
-    <Card>
+    <Card style={{ width: width }}>
       <Card.Title title={title} />
       <Card.Content>
-        {snapshots
-          .map((el, i) => {
-            return (
-              <Text key={i}>
-                {secondsAgo(el?.val()?.timestamp ?? Date.now()) +
-                  "  " +
-                  el?.val()[GetValKey(el)] ?? ""}
-              </Text>
-            );
-          })
-          .reverse()}
+        {snapshots ? (
+          snapshots
+            .map((el, i) => {
+              return (
+                <Text key={i}>
+                  {secondsAgo(el?.val()?.timestamp ?? Date.now()) +
+                    "  " +
+                    el?.val()[GetValKey(el)] ?? ""}
+                </Text>
+              );
+            })
+            .reverse()
+        ) : (
+          <Text>"Loading..."</Text>
+        )}
       </Card.Content>
     </Card>
   );
