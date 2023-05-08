@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { View } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
@@ -21,13 +22,14 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Context } from "./Context";
 import { auth, database, firebaseToken, functions } from "./Firebase";
 import { styles } from "./Styles";
+import MicrobitHandler from "./components/MicrobitHandler";
+import OLEDText from "./components/OLEDText";
 import RabbitSim, { Activity } from "./components/RabbitSim";
 import Table from "./components/Table";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import scale from "./helper_functions/scale";
 import useInterval from "./helper_functions/useInterval";
 import P5Screen from "./screens/P5Screen";
-import OLEDText from "./components/OLEDText";
 
 var debounceTimer;
 
@@ -263,7 +265,10 @@ export default function App() {
           <View style={styles.container}>
             <View style={{ ...styles.container, flexDirection: "row" }}>
               <P5Screen />
-              <OLEDText title="Messages" limitTo={10} width="50%" />
+              <View style={{...styles.container, gap:10}}>
+                <MicrobitHandler />
+                <OLEDText title="Messages" limitTo={10} width="100%" />
+              </View>
             </View>
             <Table />
           </View>
