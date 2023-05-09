@@ -1,8 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import { Button } from "react-native-paper";
 
+import { push, ref, serverTimestamp } from "firebase/database";
+import { useAuthState } from "react-firebase-hooks/auth";
+
+import { Context } from "../Context";
+import { auth, database } from "../Firebase";
+import { getMinuteTime } from "../helper_functions/dateAndTime";
+import { groupIds } from "../helper_functions/groupIds";
+import scale from "../helper_functions/scale";
+
 export default function MicrobitHandler() {
+  const [user, authLoading, authError] = useAuthState(auth);
+  const { simEnvData } = useContext(Context);
+
   /* Start of serial-handler code reused from P3. 
 Originally adapted from https://sparkfunx.github.io/WebTerminalDemo/, by SparkX. Accessed 28/03/23 */
   const debuggingIO = true;
@@ -65,7 +77,8 @@ Originally adapted from https://sparkfunx.github.io/WebTerminalDemo/, by SparkX.
   const MicrobitButton = () => {
     if (microbitPort) {
       return (
-        <Button mode="contained-tonal" onPress={closeMicrobitPort}>
+        <Button
+         mode="contained-tonal" onPress={closeMicrobitPort}>
           Close micro:bit Port
         </Button>
       );
@@ -85,6 +98,21 @@ Originally adapted from https://sparkfunx.github.io/WebTerminalDemo/, by SparkX.
 
   /* End of reused code. */
 
+  function writeToFirebase(groupId, value) {
+    if (user) {
+      console.log(`MicrobitHandler.writeToFirebase: "${Math.floor(+value)}"`);
+      push(ref(database, "data"), {
+        userId: user.uid,
+        groupId: groupId,
+        timestamp: serverTimestamp(),
+        type: "int",
+        integer: Math.floor(+value),
+      });
+    } else {
+      console.log(`MicrobitHandler.writeToFirebase called when user==${user}`);
+    }
+  }
+
   /**
    * Uses microbit input to update the start/stop state.
    */
@@ -101,19 +129,35 @@ Originally adapted from https://sparkfunx.github.io/WebTerminalDemo/, by SparkX.
         switch (split[0]) {
           case "Button1":
             if (split[1] == 1) {
-              // TODO randomise light hue
+              // randomise light hue (and temperature)
+              writeToFirebase(groupIds.LightHue, Math.random() * 360);
             } else {
-              // TODO set light hue to actual temperature
+              // set light hue to simulation temperature
+              let scaleTempToHue = scale([0, 20], [0, 360]);
+              let scaledHue = scaleTempToHue(
+                Math.max(0, Math.min(20, simEnvData.temp.value))
+              );
+              writeToFirebase(groupIds.LightHue, scaledHue);
             }
             break;
           case "Button2":
-            // TODO randomise light saturation
+            // randomise light saturation (and random variable)
+            writeToFirebase(groupIds.LightSaturation, Math.random() * 100);
             break;
           case "Button3":
             if (split[1] == 1) {
-              // TODO randomise light brightness
+              writeToFirebase(groupIds.LightBrightness, Math.random() * 100);
             } else {
-              // TODO set light brightness to actual time
+              // set light brightness (and time) to actual time
+              let tempTime = getMinuteTime(new Date());
+              if (tempTime > 720) {
+                tempTime = 1440 - tempTime;
+              }
+              let scaleTimeToBright = scale([0, 720], [0, 100]);
+              let scaledBrightness = scaleTimeToBright(
+                Math.max(0, Math.min(720, tempTime))
+              );
+              writeToFirebase(groupIds.LightBrightness, scaledBrightness);
             }
             break;
           default:
