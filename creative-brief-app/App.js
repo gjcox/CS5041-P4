@@ -12,7 +12,7 @@ import {
   limitToLast,
   orderByChild,
   query,
-  ref
+  ref,
 } from "firebase/database";
 import { httpsCallable } from "firebase/functions";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -21,6 +21,7 @@ import { useList } from "react-firebase-hooks/database";
 import { Context } from "./Context";
 import { auth, database, firebaseToken, functions } from "./Firebase";
 import { styles } from "./Styles";
+import ColouredBunny from "./components/ColouredBunny";
 import MicrobitHandler from "./components/MicrobitHandler";
 import OLEDText from "./components/OLEDText";
 import RabbitSim, { Activity } from "./components/RabbitSim";
@@ -28,7 +29,6 @@ import Table from "./components/Table";
 import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import { groupIds } from "./helper_functions/groupIds";
 import scale from "./helper_functions/scale";
-import useInterval from "./helper_functions/useInterval";
 import P5Screen from "./screens/P5Screen";
 
 var debounceTimer;
@@ -58,42 +58,11 @@ export default function App() {
     randomChoice: true,
   });
 
-  /**
-   * Updates the simulation to reflect values from the Firebase database.
-   * Values should have already been converted to reflect the intended feature.
-   *
-   * Updates are debounced to try to cope with other students spamming the database.
-   *
-   * @param {*} key the simulated environment feature
-   * @param {*} newValue the new value for the feature
-   */
-  function updateSimValue(key, newValue) {
-    if (simEnvUpdate[key] && newValue != simEnvData[key].value) {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        setSimEnvData({
-          ...simEnvData,
-          [key]: { ...simEnvData[key], value: newValue },
-        });
+  const [h, setH] = useState(Math.floor(Math.random() * 360));
+  const [s, setS] = useState(Math.floor(Math.random() * 100));
+  const [b, setB] = useState(Math.floor(Math.random() * 80));
 
-        console.log(
-          `updateSimValue[${key}].value=${newValue} (${typeof newValue})`
-        );
-      }, 1000);
-    }
-  }
-
-  // log when simEnvData actually updates
-  useEffect(() => {
-    console.log(`new simEnvData: `);
-    console.log(simEnvData);
-  }, [simEnvData]);
-
-  // Once per minute, update time
-  useInterval(() => {
-    updateSimValue("time", getMinuteTime(new Date()));
-  }, 1000 * 60);
-
+  // function for getting snapshots for a given groupId
   const snapshots = (groupId) =>
     useList(
       user
@@ -126,6 +95,31 @@ export default function App() {
     groupIds.WhiteRabbitContact
   );
 
+  /**
+   * Updates the simulation to reflect values from the Firebase database.
+   * Values should have already been converted to reflect the intended feature.
+   *
+   * Updates are debounced to try to cope with other students spamming the database.
+   *
+   * @param {*} key the simulated environment feature
+   * @param {*} newValue the new value for the feature
+   */
+  function updateSimValue(key, newValue) {
+    if (simEnvUpdate[key] && newValue != simEnvData[key].value) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        setSimEnvData({
+          ...simEnvData,
+          [key]: { ...simEnvData[key], value: newValue },
+        });
+
+        console.log(
+          `updateSimValue[${key}].value=${newValue} (${typeof newValue})`
+        );
+      }, 1000);
+    }
+  }
+
   // On light hue change, update the temperature
   useEffect(() => {
     if (hueSnapshots && (!hueLoading || hueError)) {
@@ -136,6 +130,7 @@ export default function App() {
         scaleHueToTemp(Math.max(0, Math.min(360, newHue)))
       );
       updateSimValue("temp", scaledTemp);
+      setH(newHue);
     }
   }, [hueSnapshots]);
 
@@ -145,6 +140,7 @@ export default function App() {
       let snapshot = satSnapshots[0];
       let newRandomChoice = Math.round(snapshot.val().integer);
       updateSimValue("randomChoice", newRandomChoice);
+      setS(newRandomChoice);
     }
   }, [satSnapshots]);
 
@@ -159,6 +155,7 @@ export default function App() {
       );
       if (newBrightness % 2 == 1) scaledTime = 1440 - scaledTime; // odd values are noon to midnight
       updateSimValue("time", scaledTime);
+      setB(newBrightness);
     }
   }, [brightSnapshots]);
 
@@ -219,6 +216,12 @@ export default function App() {
     })();
   }, []);
 
+  // log when simEnvData actually updates
+  useEffect(() => {
+    console.log(`new simEnvData: `);
+    console.log(simEnvData);
+  }, [simEnvData]);
+
   // add p5 library to DOM upon load
   useEffect(() => {
     const script = document.createElement("script");
@@ -254,9 +257,15 @@ export default function App() {
         >
           <RabbitSim style={{ width: "100%" }} />
           <View style={styles.container}>
-            <View style={{ ...styles.container, flexDirection: "row" }}>
+            <View
+              style={{
+                ...styles.container,
+                flexDirection: "row",
+              }}
+            >
               <P5Screen />
               <View style={{ ...styles.container, gap: 10 }}>
+                <ColouredBunny h={h} s={s} l={b} />
                 <MicrobitHandler />
                 <OLEDText title="Messages" limitTo={10} width="100%" />
               </View>
