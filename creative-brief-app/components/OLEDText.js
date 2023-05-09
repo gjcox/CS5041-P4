@@ -49,7 +49,7 @@ export default function OLEDText({
                 <Text key={i}>
                   {secondsAgo(el?.val()?.timestamp ?? Date.now()) +
                     "  " +
-                    el?.val()[GetValKey(el)] ?? ""}
+                    el?.val()[GetValKey(el)].replaceAll("\n"," ") ?? ""}
                 </Text>
               );
             })
