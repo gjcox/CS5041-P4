@@ -34,7 +34,12 @@ export default function OLEDText({
   );
 
   return (
-    <Card style={{ width: width }}>
+    <Card
+      style={{
+        width: width,
+        minWidth: width,
+      }}
+    >
       <Card.Title title={title} />
       <Card.Content>
         {snapshots ? (
