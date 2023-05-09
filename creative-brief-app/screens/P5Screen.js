@@ -59,11 +59,10 @@ export default function P5Screen() {
       Math.floor(gridDims[0] * 0.66),
       skyGridDepth - 2,
     ], // middle third above ground
-    [Math.floor(gridDims[0] * 0.66), 1, gridDims[0], skyGridDepth - 2], // right-hand third above ground
   ];
 
   const insideRooms = [2, 3, 4, 5, 6, 7];
-  const outsideRooms = [8, 9, 10];
+  const outsideRooms = [8, 9];
 
   /**
    * N.B. x and y are relative to gridDims, not canvas
@@ -105,8 +104,8 @@ export default function P5Screen() {
    */
   function onGroundWrapper(tempPixels) {
     return (x, y) => {
-      let row = Math.floor(y / pixelHeight);
-      let col = Math.floor(x / pixelWidth);
+      let row = Math.min(gridDims[0] - 1, Math.floor(y / pixelHeight));
+      let col = Math.min(gridDims[1] - 1, Math.floor(x / pixelWidth));
       return [GRASS, WALL].includes(tempPixels[row][col]);
     };
   }
@@ -149,7 +148,7 @@ export default function P5Screen() {
     );
     setWhiteRabbit(
       new NPC({
-        xy: getCenterOfRoom(3),
+        xy: [getCenterOfRoom(3)[0] + 15, getCenterOfRoom(3)[1]],
         w: npcRabbitWidth,
         h: npcRabbitHeight,
         colour: "white",
@@ -197,9 +196,8 @@ export default function P5Screen() {
           if (rabbitInside.value) {
             xy = getCenterOfRoom(5);
           } else {
-            xy = getCenterOfRoom(
-              outsideRooms[Math.floor(Math.random() * outsideRooms.length)]
-            );
+            let roomChoice = Math.floor(Math.random() * outsideRooms.length);
+            xy = getCenterOfRoom(outsideRooms[roomChoice]);
           }
           break;
         case Activity.play:
@@ -213,9 +211,8 @@ export default function P5Screen() {
           xy = getCenterOfRoom(7);
           break;
         case Activity.shelter:
-          xy = getCenterOfRoom(
-            insideRooms[Math.floor(Math.random() * insideRooms.length)]
-          );
+          let roomChoice = Math.floor(Math.random() * insideRooms.length);
+          xy = getCenterOfRoom(insideRooms[roomChoice]);
           break;
         case Activity.exercise:
           if (rabbitInside.value) {
@@ -251,7 +248,7 @@ export default function P5Screen() {
             whiteRabbit: whiteRabbit,
             visitor: visitor,
             littleRabbit: littleRabbit,
-            raindrops: rain, 
+            raindrops: rain,
           }}
         />
       ) : (

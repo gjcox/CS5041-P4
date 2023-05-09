@@ -1,7 +1,7 @@
 import RainDrop from "./RainDrop";
 
 // canvas
-export const canvasSideLength = 500;
+export const canvasSideLength = 600;
 export const gridDims = [100, 100];
 export const skyDepthFactor = 0.5; // how much of the sketch is sky
 export const skyDepth = skyDepthFactor * canvasSideLength;

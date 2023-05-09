@@ -76,6 +76,7 @@ export default function (s) {
         s.state.littleRabbit.y - s.state.littleRabbit.h
       );
     } catch (error) {
+      console.error(error)
       s.background("white");
 
       s.fill("black");
