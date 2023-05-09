@@ -70,7 +70,18 @@ export default function RabbitSim() {
     if (rabbitActivity == Activity.hide) {
       setRabbitHidingCounter(rabbitHidingCounter + 1);
       console.log("rabbitHidingCounter: ", rabbitHidingCounter + 1);
-      if (rabbitHidingCounter + 1 > maxRabbitHide) {
+      if (
+        rabbitHidingCounter + 1 > maxRabbitHide &&
+        rabbitActivity == Activity.hide
+      ) {
+        setObservationMsgWrapper(
+          "I am used to the visitor outside and might stop hiding."
+        );
+      }
+    } else if (!simEnvData.visitor.value && rabbitHidingCounter != 0) {
+      setRabbitHidingCounter(0);
+      console.log("rabbitHidingCounter: ", 0);
+      if (rabbitActivity == Activity.hide) {
         setObservationMsgWrapper(
           "I am used to the visitor outside and might stop hiding."
         );
@@ -81,6 +92,11 @@ export default function RabbitSim() {
         "rabbitHidingCounter: ",
         Math.max(0, rabbitHidingCounter - 1)
       );
+      if (rabbitHidingCounter - 1 < maxRabbitHide && simEnvData.visitor.value) {
+        setObservationMsgWrapper(
+          "I am no longer used to visitors being outside and might hide."
+        );
+      }
     }
 
     if (
@@ -278,6 +294,7 @@ export default function RabbitSim() {
   // When the observation message changes, write the new observation
   useEffect(() => {
     writeToOLED(observationMsg);
+    setObservationMsg("");
   }, [observationMsg]);
 
   // When the activity message changes, write the new activity
@@ -296,7 +313,7 @@ export default function RabbitSim() {
       setObservationMsgWrapper("I have woken up.");
     }
 
-    if (rabbitActivity == Activity.hide && !simEnvData.visitor) {
+    if (rabbitActivity == Activity.hide && !simEnvData.visitor.value) {
       setObservationMsgWrapper("I think the visitor has gone away.");
     }
 
@@ -318,7 +335,7 @@ export default function RabbitSim() {
       // rabbit awake
       if (!rabbitInside) {
         // rabbit is outside
-        if (simEnvData.visitor.value) {
+        if (simEnvData.visitor.value && rabbitHidingCounter < maxRabbitHide) {
           setActivityMsgWrapper(
             buildMessage(true, true, Activity.hide, "I have seen a visitor")
           );
