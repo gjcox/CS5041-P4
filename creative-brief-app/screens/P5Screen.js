@@ -193,7 +193,7 @@ export default function P5Screen() {
           xy = getCenterOfRoom(5);
           break;
         case Activity.feed:
-          if (rabbitInside.value) {
+          if (rabbitInside) {
             xy = getCenterOfRoom(5);
           } else {
             let roomChoice = Math.floor(Math.random() * outsideRooms.length);
@@ -201,7 +201,7 @@ export default function P5Screen() {
           }
           break;
         case Activity.play:
-          if (rabbitInside.value) {
+          if (rabbitInside) {
             xy = getCenterOfRoom(3);
           } else {
             xy = getCenterOfRoom(9);
@@ -215,7 +215,7 @@ export default function P5Screen() {
           xy = getCenterOfRoom(insideRooms[roomChoice]);
           break;
         case Activity.exercise:
-          if (rabbitInside.value) {
+          if (rabbitInside) {
             xy = getCenterOfRoom(3);
           } else {
             xy = getCenterOfRoom(
