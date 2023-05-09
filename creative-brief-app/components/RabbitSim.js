@@ -6,13 +6,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 import { Context } from "../Context";
 import { auth, database } from "../Firebase";
-import useInterval from "../helper_functions/useInterval";
 import {
-  getTimeFromMinutes,
-  seasons,
-  seasonalDawnDusk,
   checkNearDawnDusk,
+  getTimeFromMinutes,
+  seasonalDawnDusk,
+  seasons,
 } from "../helper_functions/dateAndTime";
+import useInterval from "../helper_functions/useInterval";
 
 export const Activity = Object.freeze({
   sleep: "sleep",
@@ -364,9 +364,7 @@ export default function RabbitSim() {
               "the visitor is still outside"
             )
           );
-        } /*else if (rabbitActivity == Activity.hide && (simEnvData.visitor.value) && rabbitHidingCounter == maxRabbitHide) {
-                    setActivityMsgWrapper("I am getting used to the visitor and will stop hiding soon.")
-                }*/ else if (
+        } else if (
           simEnvData.visitor.value &&
           rabbitHidingCounter < maxRabbitHide
         ) {
@@ -425,5 +423,5 @@ export default function RabbitSim() {
     }
   }
 
-  return <div style={{width: '100%'}}>{user ? true : false}</div>;
+  return <div style={{ width: "100%" }}>{user ? true : false}</div>;
 }
