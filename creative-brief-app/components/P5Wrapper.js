@@ -31,11 +31,7 @@ export default function (id = "SketchWrapper") {
       };
     }, [dispatch, sketch, state]);
 
-    return (
-      <div ref={sketchContainer}>
-        <h5>{`P5Wrapper #${id}`}</h5>
-      </div>
-    );
+    return <div ref={sketchContainer} />;
   }
 
   return memo(P5Wrapper, (_, nextProps) => {
