@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-05-03T17:34:49.702Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" etag="h8_XoDgsoWRVF-MZqGDW" version="21.2.4" type="device" pages="2">
+<mxfile host="app.diagrams.net" modified="2023-05-09T15:13:44.776Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" etag="hZQYXi9qv8gsEaxvSdVV" version="21.2.9" type="device" pages="2">
   <diagram name="Page-1" id="jPXIP7prtNmEP2wzZpXg">
-    <mxGraphModel dx="1434" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="677" dy="1041" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -88,7 +88,7 @@
         <mxCell id="xtHbnUCVzXsgDK87tj9u-27" value="Randomise light brightness" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.3;size=20;position=0.5;flipV=1;base=20;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
           <mxGeometry x="479" y="379.6" width="100" height="60.4" as="geometry" />
         </mxCell>
-        <mxCell id="xtHbnUCVzXsgDK87tj9u-28" value="Randomise light hue (doesn&#39;t seem reliable)" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.92;flipV=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
+        <mxCell id="xtHbnUCVzXsgDK87tj9u-28" value="Randomise light hue&amp;nbsp;" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.92;flipV=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
           <mxGeometry x="599" y="180" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="xtHbnUCVzXsgDK87tj9u-29" value="Set text message and&amp;nbsp;light hue based on inside temperature" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.15;size=20;position=0.15;flipV=1;base=18;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
