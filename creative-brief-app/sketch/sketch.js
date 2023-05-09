@@ -76,7 +76,7 @@ export default function (s) {
         s.state.littleRabbit.y - s.state.littleRabbit.h
       );
     } catch (error) {
-      console.error(error)
+      console.error(error);
       s.background("white");
 
       s.fill("black");
@@ -169,10 +169,10 @@ export default function (s) {
     let { dawn, dusk } = seasonalDawnDusk[season];
     if (s.state.raining) {
       s.state.raindrops.map(drawRainDrop);
-    } else if (
-      checkNearDawnDusk(season, time, 0.5) ||
-      (time > dawn && time < dusk)
-    ) {
+    } else if (checkNearDawnDusk(season, time, 0.5)) {
+      drawMoon(time, dawn, dusk);
+      drawSun(time, dawn, dusk);
+    } else if (time > dawn && time < dusk) {
       drawSun(time, dawn, dusk);
     } else {
       drawMoon(time, dawn, dusk);
@@ -187,7 +187,7 @@ export default function (s) {
   }
 
   function drawSun(time, dawn, dusk) {
-    time = Math.min(720, Math.max(0, time))
+    time = Math.min(dusk, Math.max(dawn, time));
     let y;
     let x = s.map(time, dawn, dusk, 0, canvasSideLength);
     if (time < 720) {
