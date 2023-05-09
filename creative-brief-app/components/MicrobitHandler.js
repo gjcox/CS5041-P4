@@ -85,7 +85,6 @@ Originally adapted from https://sparkfunx.github.io/WebTerminalDemo/, by SparkX.
     } else {
       return (
         <Button
-          buttonColor="#8676b6"
           disabled={microbitClosed}
           mode="contained"
           onPress={requestMicrobitPort}
