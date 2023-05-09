@@ -30,6 +30,7 @@ import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import { groupIds } from "./helper_functions/groupIds";
 import scale from "./helper_functions/scale";
 import P5Screen from "./screens/P5Screen";
+import Instructions from "./components/Instructions";
 
 var debounceTimer;
 
@@ -261,12 +262,30 @@ export default function App() {
               style={{
                 ...styles.container,
                 flexDirection: "row",
+                padding: 0,
               }}
             >
               <P5Screen />
-              <View style={{ ...styles.container, gap: 10 }}>
-                <ColouredBunny h={h} s={s} l={b} />
-                <MicrobitHandler />
+              <View
+                style={{
+                  ...styles.container,
+                  gap: 10,
+                  justifyContent: "flex-start",
+                  height: "100%",
+                }}
+              >
+                <View
+                  style={{
+                    ...styles.container,
+                    flexDirection: "row",
+                    margin: 10,
+                    gap: 5
+                  }}
+                >
+                  <ColouredBunny h={h} s={s} l={b} />
+                  <MicrobitHandler />
+                </View>
+                <Instructions width="100%" />
                 <OLEDText title="Messages" limitTo={10} width="100%" />
               </View>
             </View>
