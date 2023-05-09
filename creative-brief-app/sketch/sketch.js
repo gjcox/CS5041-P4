@@ -163,7 +163,6 @@ export default function (s) {
   }
 
   function drawWeather() {
-    // TODO stop sun and moon clipping with the dirt
     let time = s.state.simEnvData.time.value;
     let season = s.state.simEnvData.season.value;
     let { dawn, dusk } = seasonalDawnDusk[season];
@@ -187,6 +186,7 @@ export default function (s) {
   }
 
   function drawSun(time, dawn, dusk) {
+    time = Math.min(720, Math.max(0, time))
     let y;
     let x = s.map(time, dawn, dusk, 0, canvasSideLength);
     if (time < 720) {
@@ -199,13 +199,12 @@ export default function (s) {
   }
 
   function drawMoon(time, dawn, dusk) {
-    // TODO check this works
     let x, y;
     if (time < 720) {
       y = s.map(time, 0, dawn, 0, skyDepth);
       x = s.map(time, 0, dawn, canvasSideLength / 2, canvasSideLength);
     } else {
-      y = canvasSideLengths.map(time, dusk, 1440, skyDepth, 0);
+      y = s.map(time, dusk, 1440, skyDepth, 0);
       x = s.map(time, dusk, 1440, 0, canvasSideLength / 2);
     }
     s.fill("ghostwhite");
