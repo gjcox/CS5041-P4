@@ -6,7 +6,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import { Provider as PaperProvider, Text } from "react-native-paper";
 
-import { signInWithCustomToken } from "firebase/auth";
+import { signInAnonymously } from "firebase/auth";
 import {
   equalTo,
   limitToLast,
@@ -14,14 +14,14 @@ import {
   query,
   ref,
 } from "firebase/database";
-import { httpsCallable } from "firebase/functions";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useList } from "react-firebase-hooks/database";
 
 import { Context } from "./Context";
-import { auth, database, firebaseToken, functions } from "./Firebase";
+import { auth, database } from "./Firebase";
 import { styles } from "./Styles";
 import ColouredBunny from "./components/ColouredBunny";
+import Instructions from "./components/Instructions";
 import MicrobitHandler from "./components/MicrobitHandler";
 import OLEDText from "./components/OLEDText";
 import RabbitSim, { Activity } from "./components/RabbitSim";
@@ -30,7 +30,6 @@ import { getMinuteTime, getSeason } from "./helper_functions/dateAndTime";
 import { groupIds } from "./helper_functions/groupIds";
 import scale from "./helper_functions/scale";
 import P5Screen from "./screens/P5Screen";
-import Instructions from "./components/Instructions";
 
 var debounceTimer;
 
@@ -68,11 +67,11 @@ export default function App() {
     useList(
       user
         ? query(
-            ref(database, "data"),
-            orderByChild("groupId"),
-            equalTo(groupId),
-            limitToLast(10)
-          )
+          ref(database, "data"),
+          orderByChild("groupId"),
+          equalTo(groupId),
+          limitToLast(10)
+        )
         : null
     );
 
@@ -125,7 +124,7 @@ export default function App() {
   useEffect(() => {
     if (hueSnapshots && (!hueLoading || hueError)) {
       let snapshot = hueSnapshots[0];
-      let newHue = snapshot.val().integer; // 0-360
+      let newHue = snapshot?.val()?.integer ?? Math.random() * 360; // 0-360
       let scaleHueToTemp = scale([0, 360], [0, 20]);
       let scaledTemp = Math.round(
         scaleHueToTemp(Math.max(0, Math.min(360, newHue)))
@@ -139,7 +138,7 @@ export default function App() {
   useEffect(() => {
     if (satSnapshots && (!satLoading || satError)) {
       let snapshot = satSnapshots[0];
-      let newRandomChoice = Math.round(snapshot.val().integer);
+      let newRandomChoice = Math.round(snapshot?.val()?.integer ?? Math.random() * 100);
       updateSimValue("randomChoice", newRandomChoice);
       setS(newRandomChoice);
     }
@@ -149,7 +148,7 @@ export default function App() {
   useEffect(() => {
     if (brightSnapshots && (!brightLoading || brightError)) {
       let snapshot = brightSnapshots[0];
-      let newBrightness = Math.round(snapshot.val().integer);
+      let newBrightness = Math.round(snapshot?.val()?.integer ?? Math.random() * 100);
       let scaleBrightToTime = scale([0, 100], [0, 720]); // 0-100 -> 0-1440
       let scaledTime = Math.round(
         scaleBrightToTime(Math.max(0, Math.min(100, newBrightness)))
@@ -164,7 +163,7 @@ export default function App() {
   useEffect(() => {
     if (motion1Snapshots && (!motion1Loading || motion1Error)) {
       let snapshot = motion1Snapshots[0];
-      let newVisitor = snapshot.val().integer == 1;
+      let newVisitor = snapshot?.val()?.integer ?? 0 == 1;
       updateSimValue("visitor", newVisitor);
     }
   }, [motion1Snapshots]);
@@ -173,7 +172,7 @@ export default function App() {
   useEffect(() => {
     if (humiditySnapshots && (!humidityLoading || humidityError)) {
       let snapshot = humiditySnapshots[0];
-      let newHumidity = snapshot.val().integer;
+      let newHumidity = Math.round(snapshot?.val()?.integer ?? 100 * Math.random());
       updateSimValue("humidity", newHumidity);
     }
   }, [humiditySnapshots]);
@@ -186,7 +185,7 @@ export default function App() {
   useEffect(() => {
     if (greySnapshots && (!greyLoading || greyError)) {
       let snapshot = greySnapshots[0];
-      let withGreyRabbit = snapshot.val().integer == 1;
+      let withGreyRabbit = snapshot?.val()?.integer ?? 0 == 1;
       if (withGreyRabbit && rabbitInside) {
         setRabbitInside(false);
       }
@@ -197,25 +196,19 @@ export default function App() {
   useEffect(() => {
     if (whiteSnapshots && (!whiteLoading || whiteError)) {
       let snapshot = whiteSnapshots[0];
-      let withWhiteRabbit = snapshot.val().integer == 1;
+      let withWhiteRabbit = snapshot?.val()?.integer ?? 0 == 1;
       if (withWhiteRabbit && !rabbitInside) {
         setRabbitInside(true);
       }
     }
   }, [whiteSnapshots]);
 
-  /* Authenticate with token upon load */
+  /* Anonymous sign in on load */
   useEffect(() => {
-    (async () => {
-      const getToken = httpsCallable(functions, "getToken");
-      const token = await getToken({ token: firebaseToken });
-      if (token?.data?.result === "ok" && token?.data?.token) {
-        signInWithCustomToken(auth, token.data.token);
-      } else {
-        console.error(token?.data?.reason ?? "unknownError");
-      }
-    })();
-  }, []);
+    async () => {
+      await signInAnonymously(auth);
+    }
+  }, [])
 
   // log when simEnvData actually updates
   useEffect(() => {
