@@ -121,16 +121,14 @@ export default function RabbitSim() {
   function buildMessage(moving, nowInside, activity, reason) {
     let motionVerb = moving ? "going" : "staying";
     let place = nowInside ? "inside" : "outside";
-    return `I am ${motionVerb} ${place} to ${activity}${
-      reason ? " because " + reason : ""
-    }.`;
+    return `I am ${motionVerb} ${place} to ${activity}${reason ? " because " + reason : ""
+      }.`;
   }
 
   function setActivityMsgWrapper(newMsg) {
     let msElapsed = Date.now() - lastActivityMsgTime;
     console.log(
-      `newMsg is new: ${
-        newMsg != activityMsg
+      `newMsg is new: ${newMsg != activityMsg
       }; msElapsed since last message: ${msElapsed} out of ${maxMsBetweenActivityMsg}`
     );
 
@@ -156,13 +154,18 @@ export default function RabbitSim() {
     if (text == "" || !text) {
       console.log(`RabbitSim.writeToOLED called when text=="${text}"`);
     } else if (user) {
-      console.log(`RabbitSim.writeToOLED: "${text}"`);
-      push(ref(database, "data"), {
+      let data = {
         userId: user.uid,
         groupId: 20,
-        timestamp: serverTimestamp(),
+        // timestamp: serverTimestamp(),
+        timestamp: -69,
         type: "str",
         string: text.toString(),
+      }; 
+      console.log(`RabbitSim.writeToOLED:`);
+      console.log(data)
+      push(ref(database, "data"), data).catch(() => {
+        console.log("Write to realtime database failed.");
       });
     } else {
       console.log(`RabbitSim.writeToOLED called when user==${user}`);
@@ -232,13 +235,11 @@ export default function RabbitSim() {
     if (raining) {
       return "it is raining";
     } else if (tooCold()) {
-      return `it is too cold (${simEnvData.temp.value}°C in ${
-        seasons[simEnvData.season.value]
-      })`;
+      return `it is too cold (${simEnvData.temp.value}°C in ${seasons[simEnvData.season.value]
+        })`;
     } else if (tooWarm()) {
-      return `it is too hot (${simEnvData.temp.value}°C in ${
-        seasons[simEnvData.season.value]
-      })`;
+      return `it is too hot (${simEnvData.temp.value}°C in ${seasons[simEnvData.season.value]
+        })`;
     } else {
       false;
     }
