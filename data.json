@@ -1,0 +1,12 @@
+{
+    "data": {
+        "teststr": {
+            "userId": "uid",
+            "groupId": 20,
+            "timestamp": -69,
+            "type": "str",
+            "integer": null,
+            "string": "test"
+        }
+    }
+}
