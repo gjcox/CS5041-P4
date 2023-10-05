@@ -210,6 +210,11 @@ export default function App() {
     }
   }, [])
 
+  // Set document title  
+  useEffect(() => {
+    document.title = 'Interactive Rabbit Simulator';
+  })
+
   // log when simEnvData actually updates
   useEffect(() => {
     console.log(`new simEnvData: `);
@@ -233,7 +238,7 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>} >
       <PaperProvider>
         <Context.Provider
           value={{
