@@ -157,8 +157,7 @@ export default function RabbitSim() {
       let data = {
         userId: user.uid,
         groupId: 20,
-        // timestamp: serverTimestamp(),
-        timestamp: -69,
+        timestamp: serverTimestamp(),
         type: "str",
         string: text.toString(),
       }; 
