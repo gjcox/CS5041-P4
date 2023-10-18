@@ -1,14 +1,14 @@
 module.exports = function (api) {
-    api.cache(true);
+  api.cache(true);
+
+  const presets = [
+    ['babel-preset-expo', { targets: { node: 'current' } }],
+    ['@babel/preset-react', { targets: { node: 'current' } }]
+  ];
+  const plugins = ['@babel/plugin-syntax-jsx']
   
-    const presets = [
-        "@babel/preset-env",
-       ["@babel/preset-react", {"runtime": "automatic"}]
-    ];
-    const plugins = [ "@babel/plugin-syntax-jsx" ];
-  
-    return {
-      presets,
-      plugins
-    };
-  }
+  return {
+    presets,
+    plugins
+  };
+};
